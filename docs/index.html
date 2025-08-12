@@ -4,69 +4,114 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>KDP Low-Content Generator</title>
-  <style>
-    body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.6; max-width: 900px; }
-    h1 { margin-bottom: 0.25rem; }
-    code { background: #f6f8fa; padding: 2px 6px; border-radius: 4px; }
-    pre { background: #0b1020; color: #e5e7eb; padding: 1rem; border-radius: 8px; overflow: auto; }
-    a.button { display: inline-block; margin: 0.25rem 0; padding: 0.6rem 0.9rem; background: #0d6efd; color: white; text-decoration: none; border-radius: 6px; }
-    .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
-    ul { margin-top: 0.25rem; }
-  </style>
+  <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body>
-  <h1>Generator książek low-content na Amazon KDP</h1>
-  <p>PDF-y są budowane automatycznie przez GitHub Actions i publikowane tutaj (GitHub Pages). Poniżej znajdziesz gotowe do pobrania pliki.</p>
+  <div class="container">
+    <div class="header">
+      <div class="logo"></div>
+      <div>
+        <div class="title">KDP Low-Content Generator</div>
+        <div class="subtitle">Auto-budowa PDF i publikacja na GitHub Pages. Kategorie: krzyżówki, sudoku, kolorowanki, notatniki, edukacja.</div>
+      </div>
+    </div>
 
-  <div class="card">
-    <h2>Pobierz wygenerowane PDF</h2>
-    <h3>Krzyżówki (10x10)</h3>
-    <ul>
-      <li><a class="button" href="outputs/crossword_en.pdf">crossword_en.pdf</a></li>
-      <li><a class="button" href="outputs/crossword_pl.pdf">crossword_pl.pdf</a></li>
-    </ul>
-    <h3>Sudoku</h3>
-    <ul>
-      <li><a class="button" href="outputs/sudoku_easy.pdf">sudoku_easy.pdf</a></li>
-      <li><a class="button" href="outputs/sudoku_medium.pdf">sudoku_medium.pdf</a></li>
-    </ul>
-    <h3>Kolorowanki</h3>
-    <ul>
-      <li><a class="button" href="outputs/coloring_geometric.pdf">coloring_geometric.pdf</a></li>
-      <li><a class="button" href="outputs/coloring_mandala.pdf">coloring_mandala.pdf</a></li>
-      <li><a class="button" href="outputs/coloring_kids.pdf">coloring_kids.pdf</a></li>
-      <li><a class="button" href="outputs/coloring_infant.pdf">coloring_infant.pdf</a></li>
-    </ul>
-    <h3>Notatniki / Journale</h3>
-    <ul>
-      <li><a class="button" href="outputs/notebook_lined.pdf">notebook_lined.pdf</a></li>
-      <li><a class="button" href="outputs/notebook_dotted.pdf">notebook_dotted.pdf</a></li>
-      <li><a class="button" href="outputs/notebook_blank.pdf">notebook_blank.pdf</a></li>
-    </ul>
-    <h3>Ćwiczenia i łamigłówki</h3>
-    <ul>
-      <li><a class="button" href="outputs/multiplication_12.pdf">multiplication_12.pdf</a></li>
-      <li><a class="button" href="outputs/arithmetic_easy.pdf">arithmetic_easy.pdf</a></li>
-      <li><a class="button" href="outputs/wordsearch_en.pdf">wordsearch_en.pdf</a></li>
-      <li><a class="button" href="outputs/wordsearch_pl.pdf">wordsearch_pl.pdf</a></li>
-      <li><a class="button" href="outputs/maze_21.pdf">maze_21.pdf</a></li>
-    </ul>
-  </div>
+    <div class="hero">
+      <div class="canvas" id="hero-canvas"></div>
+      <div class="caption">PDF-y poniżej generowane są w CI i publikowane automatycznie.</div>
+    </div>
 
-  <div class="card">
-    <h2>Jak to działa</h2>
-    <p>Zmiana w repo (np. w generatorach albo w pliku workflow) uruchamia GitHub Actions, które:</p>
-    <ol>
-      <li>Instalują zależności Pythona</li>
-      <li>Generują PDF-y do katalogu <code>docs/outputs</code></li>
-      <li>Publikują całą zawartość <code>docs/</code> na GitHub Pages</li>
-    </ol>
-    <p>Parametry (liczba stron, tytuły, itp.) są ustawione w workflow. W razie potrzeby można je zmodyfikować w <code>.github/workflows/deploy-pages.yml</code>.</p>
-  </div>
+    <div class="grid">
+      <div class="card">
+        <h3>Krzyżówki</h3>
+        <ul class="list">
+          <li><a class="button" href="outputs/crossword_en.pdf">crossword_en.pdf</a></li>
+          <li><a class="button" href="outputs/crossword_pl.pdf">crossword_pl.pdf</a></li>
+        </ul>
+      </div>
 
-  <div class="card">
-    <h2>Rozwój</h2>
-    <p>Jeśli chcesz dodać nowe warianty, dopisz kolejne komendy generowania w kroku <code>Build PDF outputs</code> we workflow.</p>
+      <div class="card">
+        <h3>Sudoku</h3>
+        <ul class="list">
+          <li><a class="button" href="outputs/sudoku_easy.pdf">sudoku_easy.pdf</a></li>
+          <li><a class="button" href="outputs/sudoku_medium.pdf">sudoku_medium.pdf</a></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Kolorowanki</h3>
+        <ul class="list">
+          <li><a class="button" href="outputs/coloring_geometric.pdf">coloring_geometric.pdf</a></li>
+          <li><a class="button" href="outputs/coloring_mandala.pdf">coloring_mandala.pdf</a></li>
+          <li><a class="button" href="outputs/coloring_kids.pdf">coloring_kids.pdf</a></li>
+          <li><a class="button" href="outputs/coloring_infant.pdf">coloring_infant.pdf</a></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Notatniki</h3>
+        <ul class="list">
+          <li><a class="button" href="outputs/notebook_lined.pdf">notebook_lined.pdf</a></li>
+          <li><a class="button" href="outputs/notebook_dotted.pdf">notebook_dotted.pdf</a></li>
+          <li><a class="button" href="outputs/notebook_blank.pdf">notebook_blank.pdf</a></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Ćwiczenia i łamigłówki</h3>
+        <ul class="list">
+          <li><a class="button" href="outputs/multiplication_12.pdf">multiplication_12.pdf</a></li>
+          <li><a class="button" href="outputs/arithmetic_easy.pdf">arithmetic_easy.pdf</a></li>
+          <li><a class="button" href="outputs/wordsearch_en.pdf">wordsearch_en.pdf</a></li>
+          <li><a class="button" href="outputs/wordsearch_pl.pdf">wordsearch_pl.pdf</a></li>
+          <li><a class="button" href="outputs/maze_21.pdf">maze_21.pdf</a></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Specjalistyczne kartki</h3>
+        <ul class="list">
+          <li><a class="button" href="outputs/graph_025.pdf">graph_025.pdf</a></li>
+          <li><a class="button" href="outputs/isometric_025.pdf">isometric_025.pdf</a></li>
+          <li><a class="button" href="outputs/music_8.pdf">music_8.pdf</a></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Edukacja</h3>
+        <ul class="list">
+          <li><a class="button" href="outputs/dots_40.pdf">dots_40.pdf</a></li>
+          <li><a class="button" href="outputs/tracing_abc.pdf">tracing_abc.pdf</a></li>
+          <li><a class="button" href="outputs/calendar_current.pdf">calendar_current.pdf</a></li>
+          <li><a class="button" href="outputs/weekly_planner.pdf">weekly_planner.pdf</a></li>
+        </ul>
+      </div>
+    </div>
   </div>
+  <script>
+    // Lightweight animated background without heavy libs
+    const el = document.getElementById('hero-canvas');
+    const cvs = document.createElement('canvas');
+    el.appendChild(cvs);
+    const ctx = cvs.getContext('2d');
+    const resize = () => { cvs.width = el.clientWidth; cvs.height = el.clientHeight; }
+    window.addEventListener('resize', resize); resize();
+    let t = 0;
+    function loop(){
+      t+=0.008; const w=cvs.width, h=cvs.height; ctx.clearRect(0,0,w,h);
+      for(let i=0;i<60;i++){
+        const a = i/60*Math.PI*2 + t;
+        const r = Math.min(w,h)/3 + Math.sin(t*2+i)*10;
+        const x = w/2 + Math.cos(a)*r;
+        const y = h/2 + Math.sin(a)*r*0.6;
+        ctx.beginPath();
+        ctx.arc(x,y, 2+2*Math.sin(t*4+i), 0, Math.PI*2);
+        ctx.fillStyle = i%2? 'rgba(139,92,246,.7)' : 'rgba(6,182,212,.7)';
+        ctx.fill();
+      }
+      requestAnimationFrame(loop);
+    }
+    loop();
+  </script>
 </body>
 </html>

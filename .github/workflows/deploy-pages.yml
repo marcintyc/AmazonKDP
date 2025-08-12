@@ -59,6 +59,13 @@ jobs:
           python -m kdp_generator.cli wordsearch --lang en --size 14 --trim 8.5x11 --out docs/outputs/wordsearch_en.pdf
           python -m kdp_generator.cli wordsearch --lang pl --size 14 --trim 8.5x11 --out docs/outputs/wordsearch_pl.pdf
           python -m kdp_generator.cli maze --size 21 --trim 8.5x11 --out docs/outputs/maze_21.pdf
+          python -m kdp_generator.cli graph --spacing 0.25 --trim 8.5x11 --out docs/outputs/graph_025.pdf
+          python -m kdp_generator.cli isometric --side 0.25 --trim 8.5x11 --out docs/outputs/isometric_025.pdf
+          python -m kdp_generator.cli music --staves 8 --trim 8.5x11 --out docs/outputs/music_8.pdf
+          python -m kdp_generator.cli dots --pages 10 --points 40 --trim 8.5x11 --out docs/outputs/dots_40.pdf
+          python -m kdp_generator.cli tracing --pages 6 --text ABCDEFGHIJKLMNOPQRSTUVWXYZ --trim 8.5x11 --out docs/outputs/tracing_abc.pdf
+          python -m kdp_generator.cli calendar --trim 8.5x11 --out docs/outputs/calendar_current.pdf
+          python -m kdp_generator.cli weekly --trim 8.5x11 --out docs/outputs/weekly_planner.pdf
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

@@ -12,6 +12,13 @@ from .worksheets import (
     render_word_search_pdf,
     render_maze_pdf,
 )
+from .paper import render_graph_paper_pdf, render_isometric_paper_pdf, render_music_staff_paper_pdf
+from .education import (
+    render_connect_the_dots_pdf,
+    render_tracing_letters_pdf,
+    render_monthly_calendar_pdf,
+    render_weekly_planner_pdf,
+)
 
 
 SUPPORTED_TRIM_SIZES = ["6x9", "8.5x11", "8x10", "7x10"]
@@ -75,6 +82,45 @@ def parse_args() -> argparse.Namespace:
     p8.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
     p8.add_argument("--out", default="samples/maze.pdf")
 
+    # Paper
+    p9 = sub.add_parser("graph", help="Generate graph paper")
+    p9.add_argument("--spacing", type=float, default=0.25)
+    p9.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
+    p9.add_argument("--out", default="samples/graph.pdf")
+
+    p10 = sub.add_parser("isometric", help="Generate isometric paper")
+    p10.add_argument("--side", type=float, default=0.25)
+    p10.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
+    p10.add_argument("--out", default="samples/isometric.pdf")
+
+    p11 = sub.add_parser("music", help="Generate music staff paper")
+    p11.add_argument("--staves", type=int, default=8)
+    p11.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
+    p11.add_argument("--out", default="samples/music.pdf")
+
+    # Education
+    p12 = sub.add_parser("dots", help="Generate connect-the-dots pages")
+    p12.add_argument("--pages", type=int, default=20)
+    p12.add_argument("--points", type=int, default=40)
+    p12.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
+    p12.add_argument("--out", default="samples/dots.pdf")
+
+    p13 = sub.add_parser("tracing", help="Generate letter tracing pages")
+    p13.add_argument("--pages", type=int, default=10)
+    p13.add_argument("--text", type=str, default="ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    p13.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
+    p13.add_argument("--out", default="samples/tracing.pdf")
+
+    p14 = sub.add_parser("calendar", help="Generate monthly calendar")
+    p14.add_argument("--year", type=int, default=0)
+    p14.add_argument("--month", type=int, default=0)
+    p14.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
+    p14.add_argument("--out", default="samples/calendar.pdf")
+
+    p15 = sub.add_parser("weekly", help="Generate weekly planner")
+    p15.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
+    p15.add_argument("--out", default="samples/weekly.pdf")
+
     return parser.parse_args()
 
 
@@ -103,7 +149,6 @@ def main():
         render_simple_arithmetic_pdf(args.out, problems=args.problems, max_num=args.max, trim_size=args.trim)
         print(f"Saved arithmetic worksheets to {args.out}")
     elif args.command == "wordsearch":
-        # reuse word lists
         from .crossword import load_wordlist
         words = load_wordlist(args.lang)[:20]
         render_word_search_pdf(args.out, words=words, size=args.size, trim_size=args.trim)
@@ -111,6 +156,29 @@ def main():
     elif args.command == "maze":
         render_maze_pdf(args.out, size=args.size, trim_size=args.trim)
         print(f"Saved maze to {args.out}")
+    elif args.command == "graph":
+        render_graph_paper_pdf(args.out, spacing_inch=args.spacing, trim_size=args.trim)
+        print(f"Saved graph paper to {args.out}")
+    elif args.command == "isometric":
+        render_isometric_paper_pdf(args.out, triangle_side_inch=args.side, trim_size=args.trim)
+        print(f"Saved isometric paper to {args.out}")
+    elif args.command == "music":
+        render_music_staff_paper_pdf(args.out, staves_per_page=args.staves, trim_size=args.trim)
+        print(f"Saved music staff paper to {args.out}")
+    elif args.command == "dots":
+        render_connect_the_dots_pdf(args.out, pages=args.pages, num_points=args.points, trim_size=args.trim)
+        print(f"Saved connect-the-dots to {args.out}")
+    elif args.command == "tracing":
+        render_tracing_letters_pdf(args.out, pages=args.pages, text=args.text, trim_size=args.trim)
+        print(f"Saved tracing pages to {args.out}")
+    elif args.command == "calendar":
+        y = None if args.year == 0 else args.year
+        m = None if args.month == 0 else args.month
+        render_monthly_calendar_pdf(args.out, year=y, month=m, trim_size=args.trim)
+        print(f"Saved monthly calendar to {args.out}")
+    elif args.command == "weekly":
+        render_weekly_planner_pdf(args.out, trim_size=args.trim)
+        print(f"Saved weekly planner to {args.out}")
 
 
 if __name__ == "__main__":
