@@ -1,35 +1,69 @@
 import random
 from typing import List, Tuple
 
+from .pdf_utils import create_canvas, size_to_points, draw_footer_page_number, DEFAULT_MARGIN, draw_page_title
+
 
 def render_multiplication_table_pdf(filename: str, upto: int = 10, trim_size: str = "8.5x11"):
-    from reportlab.lib.colors import black
-    from .pdf_utils import create_canvas, size_to_points, draw_footer_page_number
-
     canvas = create_canvas(filename, trim_size)
     page_width, page_height = size_to_points(trim_size)
-    margin = 0.75 * 72
+    margin = DEFAULT_MARGIN
 
-    cell = min((page_width - 2 * margin) / (upto + 1), (page_height - 2 * margin) / (upto + 1))
-    x0 = (page_width - cell * (upto + 1)) / 2
-    y0 = (page_height - cell * (upto + 1)) / 2
+    draw_page_title(canvas, page_width, page_height, f"Multiplication Table up to {upto}")
 
-    canvas.setFont("Helvetica", 12)
+    # compute grid area below title
+    top_space = 40
+    grid_w = page_width - 2 * margin
+    grid_h = page_height - 2 * margin - top_space
+    cell = min(grid_w / (upto + 1), grid_h / (upto + 1))
 
+    total_w = cell * (upto + 1)
+    total_h = cell * (upto + 1)
+    x0 = (page_width - total_w) / 2
+    y0 = (page_height - total_h) / 2 - 10
+
+    # draw grid with thicker header lines
+    for r in range(upto + 2):
+        y = y0 + r * cell
+        lw = 2 if r in (1, upto + 1) else 1
+        canvas.setLineWidth(lw)
+        canvas.line(x0, y, x0 + total_w, y)
+    for c in range(upto + 2):
+        x = x0 + c * cell
+        lw = 2 if c in (1, upto + 1) else 1
+        canvas.setLineWidth(lw)
+        canvas.line(x, y0, x, y0 + total_h)
+
+    # header row/col and cells
+    canvas.setFont("Helvetica", 11)
     for r in range(upto + 1):
         for c in range(upto + 1):
             x = x0 + c * cell
             y = y0 + (upto - r) * cell
-            canvas.rect(x, y, cell, cell, stroke=1, fill=0)
-            if r == 0 and c == 0:
+            # skip top-left corner (header corner)
+            if r == upto and c == 0:
                 continue
-            if r == 0:
-                canvas.drawCentredString(x + cell / 2, y + cell / 2 - 4, str(c))
+            if r == upto:
+                # header top row numbers (1..upto)
+                val = c
             elif c == 0:
-                canvas.drawCentredString(x + cell / 2, y + cell / 2 - 4, str(r))
+                # header left col numbers (1..upto)
+                val = upto - r
             else:
-                text = f"{r}×{c}=____"
-                canvas.drawCentredString(x + cell / 2, y + cell / 2 - 4, text)
+                rr = upto - r
+                cc = c
+                text = f"{rr}×{cc}=____"
+                cx = x + cell / 2
+                cy = y + cell / 2 - 5
+                canvas.drawCentredString(cx, cy, text)
+                continue
+            # center header numbers
+            cx = x + cell / 2
+            cy = y + cell / 2 - 5
+            if val != 0:
+                canvas.setFont("Helvetica-Bold", 12)
+                canvas.drawCentredString(cx, cy, str(val))
+                canvas.setFont("Helvetica", 11)
 
     draw_footer_page_number(canvas, page_width, margin, 1)
     canvas.showPage()
@@ -37,17 +71,17 @@ def render_multiplication_table_pdf(filename: str, upto: int = 10, trim_size: st
 
 
 def render_simple_arithmetic_pdf(filename: str, problems: int = 50, max_num: int = 20, trim_size: str = "8.5x11"):
-    from .pdf_utils import create_canvas, size_to_points, draw_footer_page_number
-
     canvas = create_canvas(filename, trim_size)
     page_width, page_height = size_to_points(trim_size)
-    margin = 0.75 * 72
+    margin = DEFAULT_MARGIN
 
-    canvas.setFont("Helvetica", 14)
-    x = margin
-    y = page_height - margin
-    col_w = (page_width - 2 * margin) / 3
-    row_h = 24
+    draw_page_title(canvas, page_width, page_height, "Simple Arithmetic")
+
+    cols = 2
+    col_w = (page_width - 2 * margin) / cols
+    x_positions = [margin, margin + col_w]
+    y = page_height - margin - 40
+    row_h = 28
     page_num = 1
 
     ops = ['+', '-', '×']
@@ -57,14 +91,18 @@ def render_simple_arithmetic_pdf(filename: str, problems: int = 50, max_num: int
         op = random.choice(ops)
         if op == '-' and b > a:
             a, b = b, a
-        text = f"{i:02d}.  {a} {op} {b} = _______"
+        text = f"{i:02d}.  {a} {op} {b} = __________________"
+        col = 0 if (i - 1) % cols == 0 else 1
+        x = x_positions[col]
+        canvas.setFont("Helvetica", 13)
         canvas.drawString(x, y, text)
-        y -= row_h
-        if y < margin + row_h:
+        if col == 1:
+            y -= row_h
+        if y < margin + 40:
             draw_footer_page_number(canvas, page_width, margin, page_num)
             canvas.showPage()
-            canvas.setFont("Helvetica", 14)
-            y = page_height - margin
+            draw_page_title(canvas, page_width, page_height, "Simple Arithmetic")
+            y = page_height - margin - 40
             page_num += 1
 
     draw_footer_page_number(canvas, page_width, margin, page_num)
@@ -102,25 +140,23 @@ def _place_word_search(grid: List[List[str]], word: str) -> bool:
 
 def render_word_search_pdf(filename: str, words: List[str], size: int = 12, trim_size: str = "8.5x11"):
     from reportlab.lib.colors import black
-    from .pdf_utils import create_canvas, size_to_points, draw_footer_page_number
+    canvas = create_canvas(filename, trim_size)
+    page_width, page_height = size_to_points(trim_size)
+    margin = DEFAULT_MARGIN
 
-    # build grid
+    draw_page_title(canvas, page_width, page_height, "Word Search")
+
     grid = [['.' for _ in range(size)] for _ in range(size)]
     placed = []
     for w in words:
         w = w.upper()
         if 3 <= len(w) <= size and _place_word_search(grid, w):
             placed.append(w)
-    # fill remaining
     alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     for r in range(size):
         for c in range(size):
             if grid[r][c] == '.':
                 grid[r][c] = random.choice(alphabet)
-
-    canvas = create_canvas(filename, trim_size)
-    page_width, page_height = size_to_points(trim_size)
-    margin = 0.75 * 72
 
     grid_size = min(page_width, page_height) - 2 * margin
     cell = grid_size / size
@@ -134,17 +170,13 @@ def render_word_search_pdf(filename: str, words: List[str], size: int = 12, trim
             y = y0 + (size - 1 - r) * cell
             canvas.rect(x, y, cell, cell, stroke=1, fill=0)
             ch = grid[r][c]
-            tw = canvas.stringWidth(ch, "Helvetica", 12)
-            canvas.drawString(x + (cell - tw) / 2, y + cell * 0.3, ch)
+            canvas.drawCentredString(x + cell / 2, y + cell * 0.35, ch)
 
     draw_footer_page_number(canvas, page_width, margin, 1)
     canvas.showPage()
 
     if placed:
-        canvas.setFont("Helvetica-Bold", 18)
-        title = "Word List"
-        tw = canvas.stringWidth(title, "Helvetica-Bold", 18)
-        canvas.drawString((page_width - tw) / 2, page_height - margin - 20, title)
+        draw_page_title(canvas, page_width, page_height, "Word List")
         canvas.setFont("Helvetica", 12)
         col_w = (page_width - 2 * margin) / 3
         x = margin
@@ -168,8 +200,9 @@ def render_word_search_pdf(filename: str, words: List[str], size: int = 12, trim
 
 
 def render_maze_pdf(filename: str, size: int = 15, trim_size: str = "8.5x11"):
-    # Simple DFS backtracker maze
-    from .pdf_utils import create_canvas, size_to_points, draw_footer_page_number
+    canvas = create_canvas(filename, trim_size)
+    page_width, page_height = size_to_points(trim_size)
+    margin = DEFAULT_MARGIN
 
     n = size
     grid = [[0] * n for _ in range(n)]  # 0 wall, 1 path
@@ -188,16 +221,13 @@ def render_maze_pdf(filename: str, size: int = 15, trim_size: str = "8.5x11"):
 
     carve(0, 0)
 
-    canvas = create_canvas(filename, trim_size)
-    page_width, page_height = size_to_points(trim_size)
-    margin = 0.75 * 72
+    draw_page_title(canvas, page_width, page_height, "Maze")
 
-    grid_size = min(page_width, page_height) - 2 * margin
-    cell = grid_size / n
-    x0 = (page_width - grid_size) / 2
-    y0 = (page_height - grid_size) / 2
+    grid_draw = min(page_width, page_height) - 2 * margin
+    cell = grid_draw / n
+    x0 = (page_width - grid_draw) / 2
+    y0 = (page_height - grid_draw) / 2
 
-    # draw maze walls
     canvas.setLineWidth(2)
     for r in range(n):
         for c in range(n):

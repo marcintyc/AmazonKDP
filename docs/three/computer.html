@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Computer Build (3D)</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <style>body{background:#0b1020} .label{position:absolute; color:#e5e7eb; font-family:Inter,system-ui; font-size:12px; padding:2px 6px; background:rgba(15,23,42,.6); border:1px solid rgba(148,163,184,.3); border-radius:6px}</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header"><div class="logo"></div><div><div class="title">Computer Build (3D)</div><div class="subtitle">Podzespoły: CPU, RAM, GPU, SSD, PSU, MOBO — kliknij, aby zobaczyć opis. Animacja przepływu danych.</div></div></div>
+    <div class="hero" style="height:520px; position:relative"><div class="canvas" id="app"></div><div id="tooltip" class="label" style="display:none"></div></div>
+    <a class="button" href="index.html">← Back</a>
+  </div>
+  <script type="module">
+    import * as THREE from 'https://unpkg.com/three@0.161.0/build/three.module.js';
+    import {OrbitControls} from 'https://unpkg.com/three@0.161.0/examples/jsm/controls/OrbitControls.js?module';
+
+    const el = document.getElementById('app');
+    const tip = document.getElementById('tooltip');
+    const renderer = new THREE.WebGLRenderer({antialias:true});
+    el.appendChild(renderer.domElement);
+    renderer.setPixelRatio(devicePixelRatio);
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0b1020);
+
+    const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
+    camera.position.set(5, 6, 10);
+    const controls = new OrbitControls(camera, renderer.domElement);
+
+    scene.add(new THREE.AmbientLight(0x88aaff, 0.6));
+    const dl = new THREE.DirectionalLight(0xffffff, 0.9); dl.position.set(6,10,6); scene.add(dl);
+
+    const parts = [];
+    function addPart(name, mesh, info){ mesh.userData={name,info}; parts.push(mesh); scene.add(mesh); }
+
+    // Case base
+    const base = new THREE.Mesh(new THREE.BoxGeometry(10, 0.5, 6), new THREE.MeshStandardMaterial({color:0x1e293b, metalness:0.1, roughness:0.7}));
+    base.position.set(0,0,0); scene.add(base);
+
+    // Motherboard
+    const mobo = new THREE.Mesh(new THREE.BoxGeometry(8, 0.2, 5), new THREE.MeshStandardMaterial({color:0x334155}));
+    mobo.position.set(0,0.35,0); addPart('Motherboard (MOBO)', mobo, 'Łączy wszystkie podzespoły: CPU, RAM, GPU, dyski, zasilanie i magistrale.');
+
+    // CPU
+    const cpu = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.2, 0.8), new THREE.MeshStandardMaterial({color:0xf59e0b}));
+    cpu.position.set(-2.4, 0.5, 0); addPart('CPU (Processor)', cpu, 'Jednostka obliczeniowa wykonująca instrukcje.');
+
+    // RAM (two sticks)
+    const ramMat = new THREE.MeshStandardMaterial({color:0x22c55e});
+    const ram1 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.7, 1.8), ramMat); ram1.position.set(-1.2, 0.7, 1.0);
+    const ram2 = ram1.clone(); ram2.position.z = -1.0;
+    addPart('RAM', ram1, 'Pamięć operacyjna o szybkim dostępie, używana przez CPU.');
+    addPart('RAM', ram2, 'Pamięć operacyjna o szybkim dostępie, używana przez CPU.');
+
+    // GPU
+    const gpu = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.5, 1.2), new THREE.MeshStandardMaterial({color:0x8b5cf6}));
+    gpu.position.set(2.4, 0.6, -1.2); addPart('GPU (Graphics)', gpu, 'Przetwarza grafikę 3D/2D, wspomaga obliczenia równoległe.');
+
+    // SSD
+    const ssd = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.2, 0.8), new THREE.MeshStandardMaterial({color:0x38bdf8}));
+    ssd.position.set(2.8, 0.45, 1.8); addPart('SSD (Storage)', ssd, 'Szybka pamięć masowa NVMe/SATA do przechowywania danych.');
+
+    // PSU
+    const psu = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.8, 1.8), new THREE.MeshStandardMaterial({color:0x0ea5e9}));
+    psu.position.set(-3.6, 0.8, 2.2); addPart('PSU (Power Supply)', psu, 'Zasilacz dostarczający energię do wszystkich komponentów.');
+
+    // Data flow particles (CPU -> RAM -> GPU -> SSD circle)
+    const flowMat = new THREE.MeshBasicMaterial({color:0xffff00});
+    const particle = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), flowMat);
+    scene.add(particle);
+    const path = [cpu.position, ram1.position, gpu.position, ssd.position, cpu.position];
+    let seg = 0, t = 0;
+    function animateFlow(dt){
+      t += dt * 0.0006; if(t>1){ t=0; seg=(seg+1)% (path.length-1); }
+      const a = path[seg], b = path[seg+1];
+      particle.position.lerpVectors(a, b, t);
+    }
+
+    const ray = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    function onMove(e){
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left)/rect.width)*2-1;
+      mouse.y = -((e.clientY - rect.top)/rect.height)*2+1;
+      ray.setFromCamera(mouse, camera);
+      const hit = ray.intersectObjects(parts, true)[0];
+      if(hit){
+        tip.style.display='block'; tip.textContent = hit.object.userData.name + ' — ' + hit.object.userData.info;
+        tip.style.left = e.clientX + 12 + 'px'; tip.style.top = e.clientY + 8 + 'px';
+      } else { tip.style.display='none'; }
+    }
+    window.addEventListener('mousemove', onMove);
+
+    function resize(){ const w = el.clientWidth, h = el.clientHeight; renderer.setSize(w,h); camera.aspect = w/h; camera.updateProjectionMatrix(); }
+    window.addEventListener('resize', resize); resize();
+
+    let last = performance.now();
+    function loop(now){ const dt = now - last; last = now; animateFlow(dt); controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop);} requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
