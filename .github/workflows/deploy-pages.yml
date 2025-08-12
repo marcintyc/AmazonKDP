@@ -66,6 +66,14 @@ jobs:
           python -m kdp_generator.cli tracing --pages 6 --text ABCDEFGHIJKLMNOPQRSTUVWXYZ --trim 8.5x11 --out docs/outputs/tracing_abc.pdf
           python -m kdp_generator.cli calendar --trim 8.5x11 --out docs/outputs/calendar_current.pdf
           python -m kdp_generator.cli weekly --trim 8.5x11 --out docs/outputs/weekly_planner.pdf
+          python -m kdp_generator.cli grid --title "Grid Notebook" --pages 120 --spacing 18 --trim 6x9 --out docs/outputs/grid_notebook.pdf
+          python -m kdp_generator.cli bujo --title "Bullet Journal" --pages 120 --spacing 18 --trim 6x9 --out docs/outputs/bullet_journal.pdf
+          python -m kdp_generator.cli daily --pages 90 --trim 8.5x11 --out docs/outputs/daily_planner.pdf
+          python -m kdp_generator.cli monthly_planner --months 12 --trim 8.5x11 --out docs/outputs/monthly_planner.pdf
+          python -m kdp_generator.cli habit --pages 12 --habits 12 --trim 8.5x11 --out docs/outputs/habit_tracker.pdf
+          python -m kdp_generator.cli budget --pages 12 --trim 8.5x11 --out docs/outputs/budget_planner.pdf
+          python -m kdp_generator.cli recipe --pages 100 --trim 8.5x11 --out docs/outputs/recipe_book.pdf
+          python -m kdp_generator.cli herbarium --leaves Maple Oak Birch Chestnut Willow --trim 8.5x11 --out docs/outputs/herbarium.pdf
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
