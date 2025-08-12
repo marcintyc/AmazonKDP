@@ -74,6 +74,12 @@ jobs:
           python -m kdp_generator.cli budget --pages 12 --trim 8.5x11 --out docs/outputs/budget_planner.pdf
           python -m kdp_generator.cli recipe --pages 100 --trim 8.5x11 --out docs/outputs/recipe_book.pdf
           python -m kdp_generator.cli herbarium --leaves Maple Oak Birch Chestnut Willow --trim 8.5x11 --out docs/outputs/herbarium.pdf
+          python -m kdp_generator.cli wedding --pages 12 --trim 8.5x11 --out docs/outputs/wedding_planner.pdf
+          python -m kdp_generator.cli teacher --weeks 12 --trim 8.5x11 --out docs/outputs/teacher_planner.pdf
+          python -m kdp_generator.cli travel --trips 3 --days 5 --trim 6x9 --out docs/outputs/travel_journal.pdf
+          python -m kdp_generator.cli gratitude --weeks 12 --trim 6x9 --out docs/outputs/gratitude_journal.pdf
+          python -m kdp_generator.cli reading --entries 60 --trim 6x9 --out docs/outputs/reading_log.pdf
+          python -m kdp_generator.cli meal_weekly --weeks 12 --trim 8.5x11 --out docs/outputs/meal_weekly_planner.pdf
 
       - name: Build extra 50+ presets
         run: |

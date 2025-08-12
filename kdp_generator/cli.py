@@ -29,6 +29,14 @@ from .notebooks_extra import (
     render_recipe_book_pdf,
     render_herbarium_pdf,
 )
+from .thematic import (
+    render_wedding_planner_pdf,
+    render_teacher_planner_pdf,
+    render_travel_journal_pdf,
+    render_gratitude_journal_pdf,
+    render_reading_log_pdf,
+    render_meal_weekly_planner_pdf,
+)
 
 
 SUPPORTED_TRIM_SIZES = ["6x9", "8.5x11", "8x10", "7x10"]
@@ -177,6 +185,38 @@ def parse_args() -> argparse.Namespace:
     n8.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
     n8.add_argument("--out", default="samples/herbarium.pdf")
 
+    # Themed
+    t1 = sub.add_parser("wedding", help="Wedding planner (rich layout)")
+    t1.add_argument("--pages", type=int, default=20)
+    t1.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
+    t1.add_argument("--out", default="samples/wedding_planner.pdf")
+
+    t2 = sub.add_parser("teacher", help="Teacher planner (weeks + gradebook)")
+    t2.add_argument("--weeks", type=int, default=40)
+    t2.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
+    t2.add_argument("--out", default="samples/teacher_planner.pdf")
+
+    t3 = sub.add_parser("travel", help="Travel journal (trips with daily logs)")
+    t3.add_argument("--trips", type=int, default=6)
+    t3.add_argument("--days", type=int, default=7)
+    t3.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="6x9")
+    t3.add_argument("--out", default="samples/travel_journal.pdf")
+
+    t4 = sub.add_parser("gratitude", help="Gratitude journal (weekly prompts)")
+    t4.add_argument("--weeks", type=int, default=52)
+    t4.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="6x9")
+    t4.add_argument("--out", default="samples/gratitude_journal.pdf")
+
+    t5 = sub.add_parser("reading", help="Reading log")
+    t5.add_argument("--entries", type=int, default=200)
+    t5.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="6x9")
+    t5.add_argument("--out", default="samples/reading_log.pdf")
+
+    t6 = sub.add_parser("meal_weekly", help="Weekly meal planner")
+    t6.add_argument("--weeks", type=int, default=52)
+    t6.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
+    t6.add_argument("--out", default="samples/meal_weekly_planner.pdf")
+
     return parser.parse_args()
 
 
@@ -259,6 +299,24 @@ def main():
     elif args.command == "herbarium":
         render_herbarium_pdf(args.leaves, args.out, trim_size=args.trim)
         print(f"Saved herbarium to {args.out}")
+    elif args.command == "wedding":
+        render_wedding_planner_pdf(args.pages, args.out, trim_size=args.trim)
+        print(f"Saved wedding planner to {args.out}")
+    elif args.command == "teacher":
+        render_teacher_planner_pdf(args.weeks, args.out, trim_size=args.trim)
+        print(f"Saved teacher planner to {args.out}")
+    elif args.command == "travel":
+        render_travel_journal_pdf(args.trips, args.days, args.out, trim_size=args.trim)
+        print(f"Saved travel journal to {args.out}")
+    elif args.command == "gratitude":
+        render_gratitude_journal_pdf(args.weeks, args.out, trim_size=args.trim)
+        print(f"Saved gratitude journal to {args.out}")
+    elif args.command == "reading":
+        render_reading_log_pdf(args.entries, args.out, trim_size=args.trim)
+        print(f"Saved reading log to {args.out}")
+    elif args.command == "meal_weekly":
+        render_meal_weekly_planner_pdf(args.weeks, args.out, trim_size=args.trim)
+        print(f"Saved meal weekly planner to {args.out}")
 
 
 if __name__ == "__main__":
