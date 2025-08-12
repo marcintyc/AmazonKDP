@@ -5,6 +5,12 @@ from kdp_generator.crossword import generate_crossword, render_crossword_pdf
 from kdp_generator.sudoku import make_puzzle, render_sudoku_pdf
 from kdp_generator.coloring import render_coloring_pdf
 from kdp_generator.notebook import render_notebook_pdf
+from kdp_generator.worksheets import (
+    render_multiplication_table_pdf,
+    render_simple_arithmetic_pdf,
+    render_word_search_pdf,
+    render_maze_pdf,
+)
 
 app = Flask(__name__)
 
@@ -66,6 +72,7 @@ TEMPLATE = """
       <option value="geometric">Geometric</option>
       <option value="mandala">Mandala</option>
       <option value="kids">Kids (thick, simple)</option>
+      <option value="infant">Infant (high-contrast)</option>
     </select>
     <label>Pages</label>
     <input name="pages" type="number" value="20" min="1" max="100" />
@@ -94,6 +101,58 @@ TEMPLATE = """
     </select>
     <button type="submit">Generate PDF</button>
   </form>
+
+  <form method="post" action="/multiplication">
+    <h3>Multiplication Table</h3>
+    <label>Up to</label>
+    <input name="upto" type="number" value="10" min="5" max="20" />
+    <label>Trim size</label>
+    <select name="trim">
+      {% for s in sizes %}<option value="{{s}}">{{s}}</option>{% endfor %}
+    </select>
+    <button type="submit">Generate PDF</button>
+  </form>
+
+  <form method="post" action="/arithmetic">
+    <h3>Simple Arithmetic</h3>
+    <label>Problems</label>
+    <input name="problems" type="number" value="50" min="10" max="200" />
+    <label>Max number</label>
+    <input name="max" type="number" value="20" min="5" max="100" />
+    <label>Trim size</label>
+    <select name="trim">
+      {% for s in sizes %}<option value="{{s}}">{{s}}</option>{% endfor %}
+    </select>
+    <button type="submit">Generate PDF</button>
+  </form>
+
+  <form method="post" action="/wordsearch">
+    <h3>Word Search</h3>
+    <label>Language</label>
+    <select name="lang">
+      <option value="en">English</option>
+      <option value="pl">Polish</option>
+    </select>
+    <label>Size</label>
+    <input name="size" type="number" value="12" min="8" max="20" />
+    <label>Trim size</label>
+    <select name="trim">
+      {% for s in sizes %}<option value="{{s}}">{{s}}</option>{% endfor %}
+    </select>
+    <button type="submit">Generate PDF</button>
+  </form>
+
+  <form method="post" action="/maze">
+    <h3>Maze</h3>
+    <label>Size</label>
+    <input name="size" type="number" value="15" min="7" max="31" />
+    <label>Trim size</label>
+    <select name="trim">
+      {% for s in sizes %}<option value="{{s}}">{{s}}</option>{% endfor %}
+    </select>
+    <button type="submit">Generate PDF</button>
+  </form>
+
 </body>
 </html>
 """
@@ -147,6 +206,50 @@ def make_notebook():
     out = os.path.abspath("samples/notebook_web.pdf")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     render_notebook_pdf(title, pages, style, out, trim)
+    return send_file(out, as_attachment=True)
+
+
+@app.post("/multiplication")
+def make_multiplication():
+    upto = int(request.form.get("upto", 10))
+    trim = request.form.get("trim", "8.5x11")
+    out = os.path.abspath("samples/multiplication_web.pdf")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    render_multiplication_table_pdf(out, upto=upto, trim_size=trim)
+    return send_file(out, as_attachment=True)
+
+
+@app.post("/arithmetic")
+def make_arithmetic():
+    problems = int(request.form.get("problems", 50))
+    max_num = int(request.form.get("max", 20))
+    trim = request.form.get("trim", "8.5x11")
+    out = os.path.abspath("samples/arithmetic_web.pdf")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    render_simple_arithmetic_pdf(out, problems=problems, max_num=max_num, trim_size=trim)
+    return send_file(out, as_attachment=True)
+
+
+@app.post("/wordsearch")
+def make_wordsearch():
+    size = int(request.form.get("size", 12))
+    lang = request.form.get("lang", "en")
+    trim = request.form.get("trim", "8.5x11")
+    out = os.path.abspath("samples/wordsearch_web.pdf")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    from kdp_generator.crossword import load_wordlist
+    words = load_wordlist(lang)[:20]
+    render_word_search_pdf(out, words=words, size=size, trim_size=trim)
+    return send_file(out, as_attachment=True)
+
+
+@app.post("/maze")
+def make_maze():
+    size = int(request.form.get("size", 15))
+    trim = request.form.get("trim", "8.5x11")
+    out = os.path.abspath("samples/maze_web.pdf")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    render_maze_pdf(out, size=size, trim_size=trim)
     return send_file(out, as_attachment=True)
 
 

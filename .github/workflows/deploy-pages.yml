@@ -50,9 +50,15 @@ jobs:
           python -m kdp_generator.cli coloring --kind geometric --pages 20 --trim 8.5x11 --out docs/outputs/coloring_geometric.pdf
           python -m kdp_generator.cli coloring --kind mandala --pages 20 --trim 8.5x11 --out docs/outputs/coloring_mandala.pdf
           python -m kdp_generator.cli coloring --kind kids --pages 20 --trim 8.5x11 --out docs/outputs/coloring_kids.pdf
+          python -m kdp_generator.cli coloring --kind infant --pages 12 --trim 8.5x11 --out docs/outputs/coloring_infant.pdf
           python -m kdp_generator.cli notebook --title "Simple Lined Notebook" --style lined --pages 120 --trim 6x9 --out docs/outputs/notebook_lined.pdf
           python -m kdp_generator.cli notebook --title "Simple Dotted Journal" --style dotted --pages 120 --trim 6x9 --out docs/outputs/notebook_dotted.pdf
           python -m kdp_generator.cli notebook --title "Simple Blank Sketchbook" --style blank --pages 120 --trim 6x9 --out docs/outputs/notebook_blank.pdf
+          python -m kdp_generator.cli multiplication --upto 12 --trim 8.5x11 --out docs/outputs/multiplication_12.pdf
+          python -m kdp_generator.cli arithmetic --problems 80 --max 30 --trim 8.5x11 --out docs/outputs/arithmetic_easy.pdf
+          python -m kdp_generator.cli wordsearch --lang en --size 14 --trim 8.5x11 --out docs/outputs/wordsearch_en.pdf
+          python -m kdp_generator.cli wordsearch --lang pl --size 14 --trim 8.5x11 --out docs/outputs/wordsearch_pl.pdf
+          python -m kdp_generator.cli maze --size 21 --trim 8.5x11 --out docs/outputs/maze_21.pdf
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

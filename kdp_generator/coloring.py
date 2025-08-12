@@ -109,6 +109,60 @@ def draw_kids_simple(canvas, page_width: float, page_height: float, margin: floa
             canvas.line(cx + w * 0.5, cy, cx, y)
 
 
+def draw_infant_high_contrast(canvas, page_width: float, page_height: float, margin: float):
+    # Science-informed: infants 0-6m respond best to bold black-white high-contrast shapes
+    from math import cos, sin, pi
+    canvas.setLineWidth(6)
+    cx = page_width / 2
+    cy = page_height / 2
+    mode = random.choice(["bullseye", "checker", "stripes", "zigzag", "targets"])
+    if mode == "bullseye":
+        R = min(page_width, page_height) / 2 - margin
+        bands = random.randint(5, 9)
+        for i in range(bands):
+            r = R * (1 - i / bands)
+            canvas.circle(cx, cy, r, stroke=1, fill=0)
+    elif mode == "checker":
+        cols = rows = random.choice([6, 8, 10])
+        w = (page_width - 2 * margin) / cols
+        h = (page_height - 2 * margin) / rows
+        for i in range(cols):
+            for j in range(rows):
+                x = margin + i * w
+                y = margin + j * h
+                if (i + j) % 2 == 0:
+                    canvas.rect(x, y, w, h, stroke=1, fill=0)
+                else:
+                    canvas.rect(x, y, w, h, stroke=1, fill=0)
+    elif mode == "stripes":
+        stripes = random.randint(6, 12)
+        w = (page_width - 2 * margin) / stripes
+        for i in range(stripes):
+            x = margin + i * w
+            canvas.rect(x, margin, w, page_height - 2 * margin, stroke=1, fill=0)
+    elif mode == "zigzag":
+        steps = 20
+        x0 = margin
+        y = margin
+        step_x = (page_width - 2 * margin) / steps
+        up = True
+        for i in range(steps):
+            x1 = x0 + step_x
+            y1 = page_height - margin if up else margin
+            canvas.line(x0, y, x1, y1)
+            x0, y = x1, y1
+            up = not up
+    else:  # targets
+        targets = random.randint(3, 6)
+        for _ in range(targets):
+            r = random.uniform(1.0, 2.5) * 72
+            x = random.uniform(margin + r, page_width - margin - r)
+            y = random.uniform(margin + r, page_height - margin - r)
+            rings = random.randint(3, 6)
+            for k in range(rings):
+                canvas.circle(x, y, r * (k + 1) / rings)
+
+
 def render_coloring_pdf(kind: str, pages: int, filename: str, trim_size: str = "8.5x11"):
     from .pdf_utils import create_canvas, size_to_points, draw_footer_page_number
 
@@ -121,6 +175,8 @@ def render_coloring_pdf(kind: str, pages: int, filename: str, trim_size: str = "
             draw_mandala(canvas, page_width, page_height, margin)
         elif kind == "kids":
             draw_kids_simple(canvas, page_width, page_height, margin)
+        elif kind == "infant":
+            draw_infant_high_contrast(canvas, page_width, page_height, margin)
         else:
             draw_geometric(canvas, page_width, page_height, margin)
         draw_footer_page_number(canvas, page_width, margin, i)
