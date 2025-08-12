@@ -49,6 +49,7 @@ jobs:
           python -m kdp_generator.cli sudoku --difficulty medium --pages 5 --trim 8.5x11 --out docs/outputs/sudoku_medium.pdf
           python -m kdp_generator.cli coloring --kind geometric --pages 20 --trim 8.5x11 --out docs/outputs/coloring_geometric.pdf
           python -m kdp_generator.cli coloring --kind mandala --pages 20 --trim 8.5x11 --out docs/outputs/coloring_mandala.pdf
+          python -m kdp_generator.cli coloring --kind kids --pages 20 --trim 8.5x11 --out docs/outputs/coloring_kids.pdf
           python -m kdp_generator.cli notebook --title "Simple Lined Notebook" --style lined --pages 120 --trim 6x9 --out docs/outputs/notebook_lined.pdf
           python -m kdp_generator.cli notebook --title "Simple Dotted Journal" --style dotted --pages 120 --trim 6x9 --out docs/outputs/notebook_dotted.pdf
           python -m kdp_generator.cli notebook --title "Simple Blank Sketchbook" --style blank --pages 120 --trim 6x9 --out docs/outputs/notebook_blank.pdf

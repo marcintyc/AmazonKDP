@@ -65,6 +65,7 @@ TEMPLATE = """
     <select name="kind">
       <option value="geometric">Geometric</option>
       <option value="mandala">Mandala</option>
+      <option value="kids">Kids (thick, simple)</option>
     </select>
     <label>Pages</label>
     <input name="pages" type="number" value="20" min="1" max="100" />
@@ -109,8 +110,8 @@ def make_crossword():
     trim = request.form.get("trim", "8.5x11")
     out = os.path.abspath("samples/crossword_web.pdf")
     os.makedirs(os.path.dirname(out), exist_ok=True)
-    grid = generate_crossword(language=lang)
-    render_crossword_pdf(grid, out, trim)
+    grid, words = generate_crossword(language=lang)
+    render_crossword_pdf(grid, out, trim, words=words)
     return send_file(out, as_attachment=True)
 
 

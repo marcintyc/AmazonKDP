@@ -1,48 +1,8 @@
 import random
-from typing import List, Tuple, Dict, Optional
+from typing import List, Tuple, Dict, Optional, Set
 import os
 
 GRID_SIZE = 10
-
-# Predefined symmetric block patterns for 10x10 ("#" is block, "." is fill)
-BLOCK_PATTERNS = [
-    [
-        "..#..#..#.",
-        "..#..#..#.",
-        "#########.",
-        "..#..#..#.",
-        "..#..#..#.",
-        "..#..#..#.",
-        "#########.",
-        "..#..#..#.",
-        "..#..#..#.",
-        "..#..#..#.",
-    ],
-    [
-        "#..#..#..#",
-        "..........",
-        "#..#..#..#",
-        "..........",
-        "#..#..#..#",
-        "..........",
-        "#..#..#..#",
-        "..........",
-        "#..#..#..#",
-        "..........",
-    ],
-    [
-        "..#...#...",
-        "..#...#...",
-        "########..",
-        "...#...#..",
-        "...#...#..",
-        "..#...#...",
-        "..########",
-        "...#...#..",
-        "...#...#..",
-        "..#...#...",
-    ],
-]
 
 
 def load_wordlist(language: str) -> List[str]:
@@ -51,176 +11,132 @@ def load_wordlist(language: str) -> List[str]:
     path = os.path.join(base_dir, filename)
     with open(path, "r", encoding="utf-8") as f:
         words = [w.strip().upper() for w in f if w.strip() and w.strip().isalpha()]
-    # limit to words 3-10 letters
-    return [w for w in words if 3 <= len(w) <= GRID_SIZE]
+    # prefer 3-8 letters for better fit
+    words = [w for w in words if 3 <= len(w) <= 8]
+    random.shuffle(words)
+    return words
 
 
-def find_slots(pattern: List[str]) -> Tuple[List[Tuple[int, int, int]], List[Tuple[int, int, int]]]:
-    # Returns (across_slots, down_slots), each slot is (row, col, length)
-    across = []
-    for r in range(GRID_SIZE):
-        c = 0
-        while c < GRID_SIZE:
-            if pattern[r][c] != '#':
-                start = c
-                while c < GRID_SIZE and pattern[r][c] != '#':
-                    c += 1
-                length = c - start
-                if length >= 3:
-                    across.append((r, start, length))
-            else:
-                c += 1
-    down = []
-    for c in range(GRID_SIZE):
-        r = 0
-        while r < GRID_SIZE:
-            if pattern[r][c] != '#':
-                start = r
-                while r < GRID_SIZE and pattern[r][c] != '#':
-                    r += 1
-                length = r - start
-                if length >= 3:
-                    down.append((start, c, length))
-            else:
-                r += 1
-    return across, down
-
-
-def can_place(grid: List[List[str]], word: str, r: int, c: int, length: int, direction: str) -> bool:
-    if len(word) != length:
+def can_place(grid: List[List[str]], word: str, r: int, c: int, direction: str, require_overlap: bool) -> bool:
+    dr, dc = (0, 1) if direction == 'A' else (1, 0)
+    if not (0 <= r < GRID_SIZE and 0 <= c < GRID_SIZE):
         return False
-    if direction == 'A':
-        for i in range(length):
-            ch = grid[r][c + i]
-            if ch == '#':
-                return False
-            if ch != '.' and ch != word[i]:
-                return False
-    else:
-        for i in range(length):
-            ch = grid[r + i][c]
-            if ch == '#':
-                return False
-            if ch != '.' and ch != word[i]:
-                return False
+    r2 = r + dr * (len(word) - 1)
+    c2 = c + dc * (len(word) - 1)
+    if not (0 <= r2 < GRID_SIZE and 0 <= c2 < GRID_SIZE):
+        return False
+    overlap = False
+    for i, ch in enumerate(word):
+        rr = r + dr * i
+        cc = c + dc * i
+        cell = grid[rr][cc]
+        if cell not in ('.', ch):
+            return False
+        if cell == ch:
+            overlap = True
+    if require_overlap and not overlap:
+        return False
+    # Ensure adjacent cells do not create two-letter touching (simple rule)
+    # Check before and after the word
+    br, bc = r - dr, c - dc
+    ar, ac = r2 + dr, c2 + dc
+    if 0 <= br < GRID_SIZE and 0 <= bc < GRID_SIZE and grid[br][bc].isalpha():
+        return False
+    if 0 <= ar < GRID_SIZE and 0 <= ac < GRID_SIZE and grid[ar][ac].isalpha():
+        return False
+    # Check side-adjacency along the word
+    for i in range(len(word)):
+        rr = r + dr * i
+        cc = c + dc * i
+        # perpendicular neighbors
+        if direction == 'A':
+            for nr in (rr - 1, rr + 1):
+                if 0 <= nr < GRID_SIZE and grid[nr][cc].isalpha():
+                    if grid[rr][cc] == '.':
+                        return False
+        else:
+            for nc in (cc - 1, cc + 1):
+                if 0 <= nc < GRID_SIZE and grid[rr][nc].isalpha():
+                    if grid[rr][cc] == '.':
+                        return False
     return True
 
 
-def place_word(grid: List[List[str]], word: str, r: int, c: int, direction: str) -> List[Tuple[int, int]]:
-    changed = []
-    if direction == 'A':
-        for i, ch in enumerate(word):
-            if grid[r][c + i] == '.':
-                grid[r][c + i] = ch
-                changed.append((r, c + i))
-    else:
-        for i, ch in enumerate(word):
-            if grid[r + i][c] == '.':
-                grid[r + i][c] = ch
-                changed.append((r + i, c))
-    return changed
+def place_word(grid: List[List[str]], word: str, r: int, c: int, direction: str):
+    dr, dc = (0, 1) if direction == 'A' else (1, 0)
+    for i, ch in enumerate(word):
+        rr = r + dr * i
+        cc = c + dc * i
+        grid[rr][cc] = ch
 
 
-def undo_changes(grid: List[List[str]], changes: List[Tuple[int, int]]):
-    for r, c in changes:
-        grid[r][c] = '.'
-
-
-def build_grid(pattern: List[str]) -> List[List[str]]:
-    grid = []
-    for r in range(GRID_SIZE):
-        row = []
-        for c in range(GRID_SIZE):
-            row.append('#' if pattern[r][c] == '#' else '.')
-        grid.append(row)
-    return grid
-
-
-def get_constraints_for_slot(grid: List[List[str]], r: int, c: int, length: int, direction: str) -> str:
-    letters = []
-    if direction == 'A':
-        for i in range(length):
-            letters.append(grid[r][c + i])
-    else:
-        for i in range(length):
-            letters.append(grid[r + i][c])
-    return ''.join(letters)
-
-
-def filter_words(words_by_len: Dict[int, List[str]], pattern: str) -> List[str]:
-    candidates = []
-    for w in words_by_len.get(len(pattern), []):
-        ok = True
-        for i, ch in enumerate(pattern):
-            if ch != '.' and ch != w[i]:
-                ok = False
-                break
-        if ok:
-            candidates.append(w)
-    random.shuffle(candidates)
-    return candidates
-
-
-def backtrack_fill(grid: List[List[str]], slots: List[Tuple[int, int, int, str]], words_by_len: Dict[int, List[str]], used: set) -> bool:
-    if not slots:
-        return True
-    # Choose the slot with most constraints (fewest candidates)
-    best_idx = None
-    best_candidates = None
-    for idx, (r, c, length, direction) in enumerate(slots):
-        pattern = get_constraints_for_slot(grid, r, c, length, direction)
-        candidates = [w for w in filter_words(words_by_len, pattern) if w not in used]
-        if best_candidates is None or len(candidates) < len(best_candidates):
-            best_candidates = candidates
-            best_idx = idx
-        if best_candidates is not None and len(best_candidates) == 0:
-            break
-    if best_candidates is None or len(best_candidates) == 0:
-        return False
-    (r, c, length, direction) = slots[best_idx]
-    remaining = slots[:best_idx] + slots[best_idx + 1:]
-    for word in best_candidates:
-        if can_place(grid, word, r, c, length, direction):
-            changes = place_word(grid, word, r, c, direction)
-            used.add(word)
-            if backtrack_fill(grid, remaining, words_by_len, used):
-                return True
-            used.remove(word)
-            undo_changes(grid, changes)
-    return False
-
-
-def generate_crossword(language: str = "pl") -> List[List[str]]:
-    pattern = random.choice(BLOCK_PATTERNS)
-    grid = build_grid(pattern)
-    across, down = find_slots(pattern)
-    slots = [(r, c, l, 'A') for (r, c, l) in across] + [(r, c, l, 'D') for (r, c, l) in down]
-    random.shuffle(slots)
+def generate_crossword(language: str = "pl") -> Tuple[List[List[str]], List[str]]:
+    # Start with empty grid
+    grid = [['.' for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
     words = load_wordlist(language)
-    words_by_len: Dict[int, List[str]] = {}
-    for w in words:
-        words_by_len.setdefault(len(w), []).append(w)
-    used: set = set()
-    success = backtrack_fill(grid, slots, words_by_len, used)
-    if not success:
-        # Retry a few times with different patterns
-        for _ in range(5):
-            pattern = random.choice(BLOCK_PATTERNS)
-            grid = build_grid(pattern)
-            across, down = find_slots(pattern)
-            slots = [(r, c, l, 'A') for (r, c, l) in across] + [(r, c, l, 'D') for (r, c, l) in down]
-            random.shuffle(slots)
-            if backtrack_fill(grid, slots, words_by_len, set()):
-                success = True
+
+    used: List[str] = []
+    placed_any = False
+
+    # Place first word in the middle horizontally for better anchoring
+    for w in words[:]:
+        if len(w) <= GRID_SIZE:
+            r = GRID_SIZE // 2
+            c = max(0, (GRID_SIZE - len(w)) // 2)
+            if can_place(grid, w, r, c, 'A', require_overlap=False):
+                place_word(grid, w, r, c, 'A')
+                used.append(w)
+                words.remove(w)
+                placed_any = True
                 break
-    if not success:
-        # Fallback: return the empty grid pattern (no prefilled letters)
-        return grid
-    return grid
+
+    # Place remaining words trying to overlap
+    for w in words:
+        placed = False
+        # Try to place with overlap preference
+        positions: List[Tuple[int, int, str]] = []
+        # Heuristic: try across first then down, random order
+        dirs = ['A', 'D']
+        random.shuffle(dirs)
+        for direction in dirs:
+            for r in range(GRID_SIZE):
+                for c in range(GRID_SIZE):
+                    if can_place(grid, w, r, c, direction, require_overlap=True):
+                        positions.append((r, c, direction))
+        random.shuffle(positions)
+        for (r, c, direction) in positions:
+            place_word(grid, w, r, c, direction)
+            used.append(w)
+            placed = True
+            break
+        if not placed:
+            # as a fallback allow placement without overlap if grid is very sparse
+            if sum(ch.isalpha() for row in grid for ch in row) < 10:
+                tries = [(random.randrange(GRID_SIZE), random.randrange(GRID_SIZE), random.choice(['A', 'D'])) for _ in range(50)]
+                for r, c, direction in tries:
+                    if can_place(grid, w, r, c, direction, require_overlap=False):
+                        place_word(grid, w, r, c, direction)
+                        used.append(w)
+                        placed = True
+                        break
+        # stop if enough words
+        if len(used) >= 18:
+            break
+
+    # Convert non-letter cells to blocks '#'
+    for r in range(GRID_SIZE):
+        for c in range(GRID_SIZE):
+            if not grid[r][c].isalpha():
+                grid[r][c] = '#'
+
+    if not used:
+        raise RuntimeError("Could not place words for crossword. Try again with another language or update wordlist.")
+
+    return grid, used
 
 
-def render_crossword_pdf(grid: List[List[str]], filename: str, trim_size: str = "8.5x11"):
-    from reportlab.lib.colors import black, lightgrey, white
+def render_crossword_pdf(grid: List[List[str]], filename: str, trim_size: str = "8.5x11", words: Optional[List[str]] = None):
+    from reportlab.lib.colors import black, white
     from .pdf_utils import create_canvas, size_to_points, draw_footer_page_number
 
     canvas = create_canvas(filename, trim_size)
@@ -232,7 +148,7 @@ def render_crossword_pdf(grid: List[List[str]], filename: str, trim_size: str = 
     origin_x = (page_width - grid_size) / 2
     origin_y = (page_height - grid_size) / 2
 
-    canvas.setLineWidth(1)
+    canvas.setLineWidth(1.5)
 
     for r in range(GRID_SIZE):
         for c in range(GRID_SIZE):
@@ -247,4 +163,30 @@ def render_crossword_pdf(grid: List[List[str]], filename: str, trim_size: str = 
 
     draw_footer_page_number(canvas, page_width, margin, 1)
     canvas.showPage()
+
+    if words:
+        canvas.setFont("Helvetica-Bold", 20)
+        title = "Word List"
+        tw = canvas.stringWidth(title, "Helvetica-Bold", 20)
+        canvas.drawString((page_width - tw) / 2, page_height - margin - 20, title)
+        canvas.setFont("Helvetica", 12)
+        col_w = (page_width - 2 * margin) / 3
+        x0 = margin
+        y = page_height - margin - 50
+        line_h = 16
+        col = 0
+        for w in sorted(words):
+            canvas.drawString(x0 + col * col_w, y, w)
+            y -= line_h
+            if y < margin + 20:
+                col += 1
+                y = page_height - margin - 50
+                if col > 2:
+                    canvas.showPage()
+                    draw_footer_page_number(canvas, page_width, margin, 2)
+                    canvas.setFont("Helvetica", 12)
+                    col = 0
+        draw_footer_page_number(canvas, page_width, margin, 2)
+        canvas.showPage()
+
     canvas.save()

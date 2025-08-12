@@ -30,7 +30,7 @@ def parse_args() -> argparse.Namespace:
 
     # Coloring
     p3 = sub.add_parser("coloring", help="Generate coloring pages")
-    p3.add_argument("--kind", choices=["geometric", "mandala"], default="geometric")
+    p3.add_argument("--kind", choices=["geometric", "mandala", "kids"], default="geometric")
     p3.add_argument("--pages", type=int, default=20)
     p3.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
     p3.add_argument("--out", default="samples/coloring.pdf")
@@ -51,8 +51,8 @@ def main():
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
 
     if args.command == "crossword":
-        grid = generate_crossword(language=args.lang)
-        render_crossword_pdf(grid, args.out, trim_size=args.trim)
+        grid, words = generate_crossword(language=args.lang)
+        render_crossword_pdf(grid, args.out, trim_size=args.trim, words=words)
         print(f"Saved crossword to {args.out}")
     elif args.command == "sudoku":
         puzzles = [make_puzzle(difficulty=args.difficulty) for _ in range(args.pages)]
