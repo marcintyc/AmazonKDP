@@ -5,6 +5,8 @@ on:
     branches: [ main, master ]
     paths:
       - 'docs/**'
+      - 'kdp_generator/**'
+      - 'requirements.txt'
       - 'README.md'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
@@ -27,6 +29,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build PDF outputs
+        run: |
+          mkdir -p docs/outputs
+          python -m kdp_generator.cli crossword --lang en --trim 8.5x11 --out docs/outputs/crossword_en.pdf
+          python -m kdp_generator.cli crossword --lang pl --trim 8.5x11 --out docs/outputs/crossword_pl.pdf
+          python -m kdp_generator.cli sudoku --difficulty easy --pages 5 --trim 8.5x11 --out docs/outputs/sudoku_easy.pdf
+          python -m kdp_generator.cli sudoku --difficulty medium --pages 5 --trim 8.5x11 --out docs/outputs/sudoku_medium.pdf
+          python -m kdp_generator.cli coloring --kind geometric --pages 20 --trim 8.5x11 --out docs/outputs/coloring_geometric.pdf
+          python -m kdp_generator.cli coloring --kind mandala --pages 20 --trim 8.5x11 --out docs/outputs/coloring_mandala.pdf
+          python -m kdp_generator.cli notebook --title "Simple Lined Notebook" --style lined --pages 120 --trim 6x9 --out docs/outputs/notebook_lined.pdf
+          python -m kdp_generator.cli notebook --title "Simple Dotted Journal" --style dotted --pages 120 --trim 6x9 --out docs/outputs/notebook_dotted.pdf
+          python -m kdp_generator.cli notebook --title "Simple Blank Sketchbook" --style blank --pages 120 --trim 6x9 --out docs/outputs/notebook_blank.pdf
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
