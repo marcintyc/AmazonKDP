@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KDP Low-Content Generator</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; line-height: 1.6; max-width: 900px; }
+    h1 { margin-bottom: 0.25rem; }
+    code { background: #f6f8fa; padding: 2px 6px; border-radius: 4px; }
+    pre { background: #0b1020; color: #e5e7eb; padding: 1rem; border-radius: 8px; overflow: auto; }
+    a.button { display: inline-block; margin: 0.5rem 0; padding: 0.6rem 0.9rem; background: #0d6efd; color: white; text-decoration: none; border-radius: 6px; }
+    .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Generator książek low-content na Amazon KDP</h1>
+  <p>Projekt w Pythonie do generowania: krzyżówek (10x10), sudoku (łatwe/średnie), kolorowanek (geometria/mandale) oraz notatników/journali z personalizowaną okładką. Pliki wyjściowe zapisywane są jako PDF w popularnych wymiarach KDP (np. 6x9, 8.5x11).</p>
+
+  <div class="card">
+    <h2>Jak uruchomić lokalnie (CLI)</h2>
+    <pre><code>python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python -m kdp_generator.cli sudoku --pages 5 --difficulty easy --trim 8.5x11 --out samples/sudoku.pdf
+python -m kdp_generator.cli crossword --lang pl --trim 8.5x11 --out samples/crossword.pdf
+python -m kdp_generator.cli coloring --kind mandala --pages 20 --trim 8.5x11 --out samples/coloring.pdf
+python -m kdp_generator.cli notebook --title "Mój dziennik" --style lined --pages 120 --trim 6x9 --out samples/notebook.pdf</code></pre>
+  </div>
+
+  <div class="card">
+    <h2>Interfejs web (lokalnie)</h2>
+    <p>Prosty serwer <code>Flask</code> z formularzami generującymi PDF:</p>
+    <pre><code>FLASK_APP=app.py flask run</code></pre>
+    <p>Następnie otwórz: <code>http://localhost:5000</code>.</p>
+  </div>
+
+  <div class="card">
+    <h2>Licencja i uwagi</h2>
+    <ul>
+      <li>Wygenerowane pliki PDF są gotowe do druku. Upewnij się, że wybrałeś odpowiedni rozmiar (np. 6x9 dla notatników, 8.5x11 dla kolorowanek).</li>
+      <li>Listy słów zawierają ok. 100 haseł (PL/EN). Krzyżówka to wypełnianka 10x10.</li>
+    </ul>
+  </div>
+</body>
+</html>
