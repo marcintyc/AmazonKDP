@@ -75,6 +75,10 @@ jobs:
           python -m kdp_generator.cli recipe --pages 100 --trim 8.5x11 --out docs/outputs/recipe_book.pdf
           python -m kdp_generator.cli herbarium --leaves Maple Oak Birch Chestnut Willow --trim 8.5x11 --out docs/outputs/herbarium.pdf
 
+      - name: Build extra 50+ presets
+        run: |
+          python -m kdp_generator.presets
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
