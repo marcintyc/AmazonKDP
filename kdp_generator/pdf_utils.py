@@ -11,6 +11,8 @@ KDP_SIZES_INCHES = {
     "7x10": (7.0, 10.0),
 }
 
+DEFAULT_MARGIN = 0.75 * 72
+
 
 def size_to_points(trim_size: str) -> Tuple[float, float]:
     if trim_size not in KDP_SIZES_INCHES:
@@ -29,6 +31,13 @@ def draw_centered_title(canvas: Canvas, page_width: float, page_height: float, t
     canvas.setFont(font_name, font_size)
     text_width = canvas.stringWidth(title, font_name, font_size)
     canvas.drawString((page_width - text_width) / 2, page_height * y_ratio, title)
+
+
+def draw_page_title(canvas: Canvas, page_width: float, page_height: float, title: str, font_name: str = "Helvetica-Bold", font_size: int = 18):
+    canvas.setFillColor(black)
+    canvas.setFont(font_name, font_size)
+    tw = canvas.stringWidth(title, font_name, font_size)
+    canvas.drawString((page_width - tw) / 2, page_height - DEFAULT_MARGIN + 8, title)
 
 
 def draw_footer_page_number(canvas: Canvas, page_width: float, margin: float, page_number: int, font_name: str = "Helvetica", font_size: int = 10):

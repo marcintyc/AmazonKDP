@@ -1,15 +1,15 @@
 import random
 from typing import List, Tuple
 
+from .pdf_utils import create_canvas, size_to_points, draw_footer_page_number, DEFAULT_MARGIN, draw_page_title
+
 Grid = List[List[int]]
 
 
 def is_valid(grid: Grid, r: int, c: int, val: int) -> bool:
-    # row/col
     for i in range(9):
         if grid[r][i] == val or grid[i][c] == val:
             return False
-    # box
     br, bc = 3 * (r // 3), 3 * (c // 3)
     for i in range(br, br + 3):
         for j in range(bc, bc + 3):
@@ -27,7 +27,6 @@ def find_empty(grid: Grid) -> Tuple[int, int]:
 
 
 def solve(grid: Grid, count_solutions: bool = False, limit: int = 2) -> int:
-    # returns number of solutions (early stopping at limit)
     r, c = find_empty(grid)
     if r == -1:
         return 1
@@ -47,6 +46,7 @@ def solve(grid: Grid, count_solutions: bool = False, limit: int = 2) -> int:
 
 def fill_complete_grid() -> Grid:
     grid = [[0] * 9 for _ in range(9)]
+
     def backtrack() -> bool:
         r, c = find_empty(grid)
         if r == -1:
@@ -60,16 +60,15 @@ def fill_complete_grid() -> Grid:
                     return True
                 grid[r][c] = 0
         return False
+
     backtrack()
     return grid
 
 
 def make_puzzle(difficulty: str = "easy") -> Grid:
-    # Create a full grid then remove numbers while maintaining uniqueness
     full = fill_complete_grid()
     puzzle = [row[:] for row in full]
 
-    # target clues depending on difficulty
     if difficulty == "easy":
         target_clues = random.randint(36, 40)
     else:
@@ -84,7 +83,6 @@ def make_puzzle(difficulty: str = "easy") -> Grid:
             break
         backup = puzzle[r][c]
         puzzle[r][c] = 0
-        # check uniqueness
         grid_copy = [row[:] for row in puzzle]
         num_solutions = solve(grid_copy, count_solutions=True, limit=2)
         if num_solutions != 1:
@@ -95,12 +93,9 @@ def make_puzzle(difficulty: str = "easy") -> Grid:
 
 
 def render_sudoku_pdf(puzzles: List[Grid], filename: str, trim_size: str = "8.5x11"):
-    from reportlab.lib.colors import black
-    from .pdf_utils import create_canvas, size_to_points, draw_footer_page_number
-
     canvas = create_canvas(filename, trim_size)
     page_width, page_height = size_to_points(trim_size)
-    margin = 0.75 * 72
+    margin = DEFAULT_MARGIN
 
     grid_size = min(page_width, page_height) - 2 * margin
     cell_size = grid_size / 9
@@ -109,7 +104,7 @@ def render_sudoku_pdf(puzzles: List[Grid], filename: str, trim_size: str = "8.5x
 
     page_num = 1
     for puzzle in puzzles:
-        canvas.setLineWidth(1)
+        draw_page_title(canvas, page_width, page_height, "Sudoku")
         for r in range(10):
             lw = 2 if r % 3 == 0 else 1
             canvas.setLineWidth(lw)
@@ -120,17 +115,15 @@ def render_sudoku_pdf(puzzles: List[Grid], filename: str, trim_size: str = "8.5x
             canvas.setLineWidth(lw)
             x = origin_x + c * cell_size
             canvas.line(x, origin_y, x, origin_y + grid_size)
-        # numbers
         canvas.setFont("Helvetica", 14)
         for r in range(9):
             for c in range(9):
                 v = puzzle[r][c]
                 if v != 0:
                     text = str(v)
-                    tw = canvas.stringWidth(text, "Helvetica", 14)
-                    x = origin_x + c * cell_size + (cell_size - tw) / 2
+                    x = origin_x + c * cell_size + cell_size / 2
                     y = origin_y + (8 - r) * cell_size + cell_size * 0.3
-                    canvas.drawString(x, y, text)
+                    canvas.drawCentredString(x, y, text)
         draw_footer_page_number(canvas, page_width, margin, page_num)
         canvas.showPage()
         page_num += 1
