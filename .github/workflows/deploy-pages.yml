@@ -43,6 +43,12 @@ jobs:
       - name: Build PDF outputs
         run: |
           mkdir -p docs/outputs
+          python -m kdp_generator.cli notebook --title "Lined Notebook" --style lined --pages 120 --trim 6x9 --out docs/outputs/notebook_lined.pdf
+          python -m kdp_generator.cli notebook --title "Dotted Journal" --style dotted --pages 120 --trim 6x9 --out docs/outputs/notebook_dotted.pdf
+          python -m kdp_generator.cli notebook --title "Sketchbook" --style blank --pages 120 --trim 6x9 --out docs/outputs/notebook_blank.pdf
+          python -m kdp_generator.cli notebook --title "Lined Notebook (bleed)" --style lined --pages 120 --trim 6x9 --bleed --out docs/outputs/notebook_lined_bleed.pdf
+          python -m kdp_generator.cli bujo --title "Bullet Journal (bleed)" --pages 120 --trim 6x9 --bleed --out docs/outputs/bullet_journal_bleed.pdf
+          python -m kdp_generator.cli grid --title "Grid Notebook (bleed)" --pages 120 --trim 6x9 --bleed --out docs/outputs/grid_notebook_bleed.pdf
           python -m kdp_generator.cli crossword --lang en --trim 8.5x11 --out docs/outputs/crossword_en.pdf
           python -m kdp_generator.cli crossword --lang pl --trim 8.5x11 --out docs/outputs/crossword_pl.pdf
           python -m kdp_generator.cli sudoku --difficulty easy --pages 5 --trim 8.5x11 --out docs/outputs/sudoku_easy.pdf
@@ -51,9 +57,6 @@ jobs:
           python -m kdp_generator.cli coloring --kind mandala --pages 20 --trim 8.5x11 --out docs/outputs/coloring_mandala.pdf
           python -m kdp_generator.cli coloring --kind kids --pages 20 --trim 8.5x11 --out docs/outputs/coloring_kids.pdf
           python -m kdp_generator.cli coloring --kind infant --pages 12 --trim 8.5x11 --out docs/outputs/coloring_infant.pdf
-          python -m kdp_generator.cli notebook --title "Simple Lined Notebook" --style lined --pages 120 --trim 6x9 --out docs/outputs/notebook_lined.pdf
-          python -m kdp_generator.cli notebook --title "Simple Dotted Journal" --style dotted --pages 120 --trim 6x9 --out docs/outputs/notebook_dotted.pdf
-          python -m kdp_generator.cli notebook --title "Simple Blank Sketchbook" --style blank --pages 120 --trim 6x9 --out docs/outputs/notebook_blank.pdf
           python -m kdp_generator.cli multiplication --upto 12 --trim 8.5x11 --out docs/outputs/multiplication_12.pdf
           python -m kdp_generator.cli arithmetic --problems 80 --max 30 --trim 8.5x11 --out docs/outputs/arithmetic_easy.pdf
           python -m kdp_generator.cli wordsearch --lang en --size 14 --trim 8.5x11 --out docs/outputs/wordsearch_en.pdf
@@ -66,8 +69,6 @@ jobs:
           python -m kdp_generator.cli tracing --pages 6 --text ABCDEFGHIJKLMNOPQRSTUVWXYZ --trim 8.5x11 --out docs/outputs/tracing_abc.pdf
           python -m kdp_generator.cli calendar --trim 8.5x11 --out docs/outputs/calendar_current.pdf
           python -m kdp_generator.cli weekly --trim 8.5x11 --out docs/outputs/weekly_planner.pdf
-          python -m kdp_generator.cli grid --title "Grid Notebook" --pages 120 --spacing 18 --trim 6x9 --out docs/outputs/grid_notebook.pdf
-          python -m kdp_generator.cli bujo --title "Bullet Journal" --pages 120 --spacing 18 --trim 6x9 --out docs/outputs/bullet_journal.pdf
           python -m kdp_generator.cli daily --pages 90 --trim 8.5x11 --out docs/outputs/daily_planner.pdf
           python -m kdp_generator.cli monthly_planner --months 24 --trim 8.5x11 --out docs/outputs/monthly_planner.pdf
           python -m kdp_generator.cli habit --pages 12 --habits 12 --trim 8.5x11 --out docs/outputs/habit_tracker.pdf
