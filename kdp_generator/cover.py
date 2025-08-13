@@ -2,14 +2,18 @@ from typing import Optional
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.colors import black, HexColor
+from reportlab.lib.units import inch
 from .pdf_utils import create_canvas, size_to_points
 
 PAPER_THICKNESS_INCH = {
-    'bw_55': 0.002252,  # B&W 55lb
-    'color_60': 0.0026, # Color 60lb (approx)
+    'bw_55': 0.002252,
+    'color_60': 0.0026,
 }
 
 BLEED_INCH = 0.125
+SAFE_INCH = 0.25
+BARCODE_W_IN = 2.0
+BARCODE_H_IN = 1.2
 
 
 def calc_spine_width_inches(page_count: int, stock: str = 'bw_55') -> float:
@@ -39,6 +43,7 @@ def render_kdp_cover_pdf(
     bg_color: str = '#ffffff',
     accent_color: str = '#000000',
     font_path: Optional[str] = None,
+    show_guides: bool = False,
 ):
     w_in, h_in = (s/72.0 for s in size_to_points(trim_size))
     bleed = BLEED_INCH if with_bleed else 0.0
@@ -48,7 +53,7 @@ def render_kdp_cover_pdf(
     cover_h_in = h_in + 2 * bleed
 
     from reportlab.lib.units import inch
-    canvas = create_canvas(filename, trim_size)  # temporary size replaced below
+    canvas = create_canvas(filename, trim_size)
     canvas.setPageSize((cover_w_in * inch, cover_h_in * inch))
 
     bg = HexColor(bg_color)
@@ -57,10 +62,26 @@ def render_kdp_cover_pdf(
     canvas.setFillColor(bg)
     canvas.rect(0, 0, cover_w_in * inch, cover_h_in * inch, fill=1, stroke=0)
 
+    # Guides: safe areas and barcode box
+    if show_guides:
+        canvas.setStrokeColor(HexColor('#cccccc'))
+        # Spine area
+        canvas.rect((bleed + w_in) * inch, 0, spine_in * inch, cover_h_in * inch, stroke=1, fill=0)
+        # Safe areas front/back
+        safe = SAFE_INCH
+        # Back safe
+        canvas.rect(bleed * inch + safe * inch, bleed * inch + safe * inch, (w_in - 2*safe) * inch, (h_in - 2*safe) * inch, stroke=1, fill=0)
+        # Front safe
+        canvas.rect((bleed + w_in + spine_in + safe) * inch, (bleed + safe) * inch, (w_in - 2*safe) * inch, (h_in - 2*safe) * inch, stroke=1, fill=0)
+        # Barcode box on back bottom-right
+        canvas.setStrokeColor(HexColor('#999999'))
+        canvas.rect((bleed + w_in - BARCODE_W_IN - 0.25) * inch, (bleed + 0.25) * inch, BARCODE_W_IN * inch, BARCODE_H_IN * inch, stroke=1, fill=0)
+
     chosen_font = register_font_if_needed(font_path) or 'Helvetica-Bold'
     chosen_font_sub = register_font_if_needed(font_path) or 'Helvetica'
 
     canvas.setFillColor(accent)
+    # Front cover text
     front_x = (w_in + spine_in + bleed) * inch
     front_y = bleed * inch
     front_w = w_in * inch
@@ -78,21 +99,17 @@ def render_kdp_cover_pdf(
         atw = canvas.stringWidth(author, chosen_font_sub, 16)
         canvas.drawString(front_x + (front_w - atw) / 2, front_y + front_h * 0.1, author)
 
+    # Spine text vertical (reading bottom-to-top)
     canvas.saveState()
-    canvas.translate((w_in + bleed + spine_in/2) * inch, cover_h_in * inch / 2)
+    cx = (w_in + bleed + spine_in/2) * inch
+    cy = cover_h_in * inch / 2
+    canvas.translate(cx, cy)
     canvas.rotate(90)
     canvas.setFont(chosen_font_sub, 16)
-    st = title[:40]
+    st = title[:60]
     stw = canvas.stringWidth(st, chosen_font_sub, 16)
     canvas.drawString(-stw / 2, -8, st)
     canvas.restoreState()
-
-    back_x = bleed * inch
-    back_y = bleed * inch
-    back_w = w_in * inch
-    back_h = h_in * inch
-    canvas.setStrokeColor(HexColor('#dddddd'))
-    canvas.rect(back_x + back_w * 0.1, back_y + back_h * 0.2, back_w * 0.8, back_h * 0.5, stroke=1, fill=0)
 
     canvas.showPage()
     canvas.save()
