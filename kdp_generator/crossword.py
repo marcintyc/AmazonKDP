@@ -2,6 +2,9 @@ import random
 from typing import List, Tuple, Dict, Optional, Set
 import os
 
+from reportlab.lib.colors import black, white
+from .pdf_utils import create_canvas, size_to_points, draw_footer_page_number
+
 GRID_SIZE = 10
 
 
@@ -136,9 +139,6 @@ def generate_crossword(language: str = "pl") -> Tuple[List[List[str]], List[str]
 
 
 def render_crossword_pdf(grid: List[List[str]], filename: str, trim_size: str = "8.5x11", words: Optional[List[str]] = None):
-    from reportlab.lib.colors import black, white
-    from .pdf_utils import create_canvas, size_to_points, draw_footer_page_number
-
     canvas = create_canvas(filename, trim_size)
     page_width, page_height = size_to_points(trim_size)
     margin = 0.75 * 72
@@ -189,4 +189,33 @@ def render_crossword_pdf(grid: List[List[str]], filename: str, trim_size: str = 
         draw_footer_page_number(canvas, page_width, margin, 2)
         canvas.showPage()
 
+    canvas.save()
+
+
+def render_crossword_book_pdf(grids: List[List[List[str]]], filename: str, trim_size: str = "8.5x11"):
+    canvas = create_canvas(filename, trim_size)
+    page_width, page_height = size_to_points(trim_size)
+    margin = 0.75 * 72
+
+    grid_draw = min(page_width, page_height) - 2 * margin
+    cell_size = grid_draw / GRID_SIZE
+    origin_x = (page_width - grid_draw) / 2
+    origin_y = (page_height - grid_draw) / 2
+
+    page_num = 1
+    for grid in grids:
+        canvas.setLineWidth(1.5)
+        for r in range(GRID_SIZE):
+            for c in range(GRID_SIZE):
+                x = origin_x + c * cell_size
+                y = origin_y + (GRID_SIZE - 1 - r) * cell_size
+                if grid[r][c] == '#':
+                    canvas.setFillColor(black)
+                    canvas.rect(x, y, cell_size, cell_size, fill=1, stroke=0)
+                else:
+                    canvas.setFillColor(white)
+                    canvas.rect(x, y, cell_size, cell_size, fill=1, stroke=1)
+        draw_footer_page_number(canvas, page_width, margin, page_num)
+        canvas.showPage()
+        page_num += 1
     canvas.save()
