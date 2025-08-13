@@ -98,6 +98,32 @@ jobs:
               f.write('</div></div></body></html>')
           PY
 
+      - name: Preflight checks (PDF sizes/pagecount)
+        run: |
+          python - << 'PY'
+          from pypdf import PdfReader
+          import os, sys
+          ok = True
+          def check(path, min_pages=24):
+              nonlocal ok
+              try:
+                  r = PdfReader(path)
+                  if r.is_encrypted:
+                      print('Encrypted not allowed:', path); ok=False; return
+                  n = len(r.pages)
+                  if n < min_pages:
+                      print('Too few pages:', path, n); ok=False
+              except Exception as e:
+                  print('Invalid PDF:', path, e); ok=False
+          root = 'docs/outputs'
+          for f in ['notebook_lined.pdf','bullet_journal.pdf','grid_notebook.pdf','daily_planner.pdf','monthly_planner.pdf']:
+              p = os.path.join(root,f)
+              if os.path.exists(p):
+                  check(p, 24)
+          if not ok:
+              sys.exit(1)
+          PY
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 

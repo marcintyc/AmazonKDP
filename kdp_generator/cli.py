@@ -37,6 +37,7 @@ from .thematic import (
     render_reading_log_pdf,
     render_meal_weekly_planner_pdf,
 )
+from .cover import render_kdp_cover_pdf
 
 
 SUPPORTED_TRIM_SIZES = ["6x9", "8.5x11", "8x10", "7x10"]
@@ -217,6 +218,20 @@ def parse_args() -> argparse.Namespace:
     t6.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
     t6.add_argument("--out", default="samples/meal_weekly_planner.pdf")
 
+    # Cover
+    c1 = sub.add_parser("cover", help="Generate KDP full-wrap cover")
+    c1.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="6x9")
+    c1.add_argument("--pages", type=int, default=120)
+    c1.add_argument("--stock", choices=["bw_55", "color_60"], default="bw_55")
+    c1.add_argument("--bleed", action="store_true")
+    c1.add_argument("--title", type=str, required=True)
+    c1.add_argument("--subtitle", type=str, default="")
+    c1.add_argument("--author", type=str, default="")
+    c1.add_argument("--bg", type=str, default="#ffffff")
+    c1.add_argument("--accent", type=str, default="#000000")
+    c1.add_argument("--font", type=str, default="")
+    c1.add_argument("--out", default="samples/cover.pdf")
+
     return parser.parse_args()
 
 
@@ -317,6 +332,21 @@ def main():
     elif args.command == "meal_weekly":
         render_meal_weekly_planner_pdf(args.weeks, args.out, trim_size=args.trim)
         print(f"Saved meal weekly planner to {args.out}")
+    elif args.command == "cover":
+        render_kdp_cover_pdf(
+            args.out,
+            trim_size=args.trim,
+            page_count=args.pages,
+            stock=args.stock,
+            with_bleed=args.bleed,
+            title=args.title,
+            subtitle=(args.subtitle or None),
+            author=(args.author or None),
+            bg_color=args.bg,
+            accent_color=args.accent,
+            font_path=(args.font or None),
+        )
+        print(f"Saved KDP cover to {args.out}")
 
 
 if __name__ == "__main__":
