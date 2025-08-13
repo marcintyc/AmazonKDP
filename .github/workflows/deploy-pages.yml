@@ -81,9 +81,22 @@ jobs:
           python -m kdp_generator.cli reading --entries 60 --trim 6x9 --out docs/outputs/reading_log.pdf
           python -m kdp_generator.cli meal_weekly --weeks 12 --trim 8.5x11 --out docs/outputs/meal_weekly_planner.pdf
 
-      - name: Build extra 50+ presets
+      - name: Build extra 100+ presets
         run: |
           python -m kdp_generator.presets
+
+      - name: Generate outputs index
+        run: |
+          python - << 'PY'
+          import os, html
+          root = 'docs/outputs'
+          files = sorted([f for f in os.listdir(root) if f.lower().endswith('.pdf')])
+          with open(os.path.join(root,'index.html'),'w') as f:
+              f.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Outputs Index</title><link rel="stylesheet" href="../assets/style.css"></head><body><div class="container"><div class="header"><div class="logo"></div><div><div class="title">Outputs Index</div><div class="subtitle">Wygenerowane PDF (pełna lista)</div></div></div><div class="grid">')
+              for name in files:
+                  f.write('<div class="card"><a class="button" href="'+ html.escape(name) +'">'+ html.escape(name) +'</a></div>')
+              f.write('</div></div></body></html>')
+          PY
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

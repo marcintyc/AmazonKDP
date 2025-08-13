@@ -22,11 +22,10 @@ def ensure_dir():
 
 
 def presets() -> List[Tuple[str, callable]]:
-    # Title-only journals use render_notebook_pdf with various styles and titles
     title_only = [
         ("gratitude_journal.pdf", lambda: render_notebook_pdf("Gratitude Journal", 120, "lined", os.path.join(OUTPUT_DIR, "gratitude_journal.pdf"), "6x9")),
         ("travel_journal.pdf", lambda: render_notebook_pdf("Travel Journal", 120, "dotted", os.path.join(OUTPUT_DIR, "travel_journal.pdf"), "6x9")),
-        ("fitness_logbook.pdf", lambda: render_notebook_pdf("Fitness Logbook", 120, "grid" if False else "lined", os.path.join(OUTPUT_DIR, "fitness_logbook.pdf"), "6x9")),
+        ("fitness_logbook.pdf", lambda: render_notebook_pdf("Fitness Logbook", 120, "lined", os.path.join(OUTPUT_DIR, "fitness_logbook.pdf"), "6x9")),
         ("meal_planner.pdf", lambda: render_notebook_pdf("Meal Planner", 120, "lined", os.path.join(OUTPUT_DIR, "meal_planner.pdf"), "6x9")),
         ("baby_logbook.pdf", lambda: render_notebook_pdf("Baby Logbook", 120, "lined", os.path.join(OUTPUT_DIR, "baby_logbook.pdf"), "6x9")),
         ("pregnancy_journal.pdf", lambda: render_notebook_pdf("Pregnancy Journal", 120, "dotted", os.path.join(OUTPUT_DIR, "pregnancy_journal.pdf"), "6x9")),
@@ -49,7 +48,6 @@ def presets() -> List[Tuple[str, callable]]:
         ("calligraphy_practice.pdf", lambda: render_tracing_letters_pdf(os.path.join(OUTPUT_DIR, "calligraphy_practice.pdf"), pages=10, text="ABCDEFGHIJKLMNOPQRSTUVWXYZ", trim_size="8.5x11")),
     ]
 
-    # Duplicate variants with different titles
     more_titles = [
         "Gratitude Journal Midnight", "Daily Wellness Journal", "Mindfulness Journal", "Dream Journal", "Prayer Journal",
         "Budget Planner Classic", "Bill Tracker", "Expense Tracker", "Password Logbook", "Address Book",
@@ -61,16 +59,32 @@ def presets() -> List[Tuple[str, callable]]:
         "Reading Tracker", "Book Review Journal", "Movie Review Journal", "Gardening Journal", "House Cleaning Planner",
         "Meal Plan & Grocery List", "Intermittent Fasting Tracker", "Water Tracker", "Habit Journal", "Morning Routine Planner",
         "Evening Routine Planner", "Self-Care Planner", "Anxiety Journal", "Mood Tracker", "Sermon Notes",
+        # add many more to surpass 100
+        "Dental Care Log", "Medical Appointment Log", "Blood Pressure Log", "Glucose Tracker", "Symptom Tracker",
+        "Medication Log", "Allergy Journal", "Pain Tracker", "Physio Exercise Log", "Rehab Journal",
+        "Budget Monthly Planner", "Debt Snowball Tracker", "Savings Tracker", "Investment Journal", "Expense Category Ledger",
+        "Content Planner", "Social Media Planner", "YouTube Planning", "Podcast Planner", "Blog Planner",
+        "Etsy Product Planner", "Amazon Seller Planner", "Shop Inventory Log", "Order Tracker", "Shipping Log",
+        "Class Notes", "Lecture Notes", "Lab Notebook", "Research Journal", "Citation Log",
+        "Vacation Planner", "City Trip Planner", "Packing Checklist", "Itinerary Planner", "Travel Expenses Log",
+        "Wedding Guest List", "Wedding Vendor List", "Wedding Budget", "Seating Chart Notes", "Venue Planning",
+        "Chore Chart", "Weekly Chore Planner", "Home Maintenance Log", "Yard Work Planner", "Plant Watering Log",
+        "Greenhouse Journal", "Seed Starting Log", "Herb Garden Journal", "Vegetable Garden Planner", "Flower Garden Planner",
+        "Music Composition Book", "Guitar Practice Log", "Piano Practice Log", "Singing Practice Log", "Band Rehearsal Notes",
+        "Art Sketch Journal", "Watercolor Journal", "Comics Planning", "Storyboard Notebook", "Photography Shot List",
+        "Coding Journal", "Bug Hunting Log", "Feature Ideas Log", "System Design Notes", "Interview Prep Notebook",
+        "Reading Challenge Tracker", "Book Series Tracker", "Library Loans Log", "Wish List Planner", "Gift Planner",
+        "Mind Map Notebook", "Brain Dump Journal", "Ideas Capture", "Daily Prompts Journal", "Quotes Collection",
+        "Language Grammar Notes", "Kanji Practice Book", "Vocabulary Builder", "Conversation Phrases", "Pronunciation Practice",
     ]
 
     for name in more_titles:
-        slug = name.lower().replace(" ", "_")
+        slug = name.lower().replace(" ", "_").replace("&", "and").replace("/", "-")
         path = os.path.join(OUTPUT_DIR, f"{slug}.pdf")
-        # choose a style variant based on keywords
         style = "lined"
-        if any(k in name.lower() for k in ["dot", "grid", "bullet", "planner", "journal"]):
+        if any(k in name.lower() for k in ["dot", "grid", "bullet", "planner", "journal", "notes", "log", "tracker"]):
             style = "dotted"
-        if any(k in name.lower() for k in ["sketch", "draw"]):
+        if any(k in name.lower() for k in ["sketch", "draw", "art", "watercolor"]):
             style = "blank"
         title_only.append((f"{slug}.pdf", lambda n=name, s=style, p=path: render_notebook_pdf(n, 120, s, p, "6x9")))
 
