@@ -103,23 +103,26 @@ jobs:
           python - << 'PY'
           from pypdf import PdfReader
           import os, sys
-          ok = True
           def check(path, min_pages=24):
-              nonlocal ok
               try:
                   r = PdfReader(path)
                   if r.is_encrypted:
-                      print('Encrypted not allowed:', path); ok=False; return
+                      print('Encrypted not allowed:', path)
+                      return False
                   n = len(r.pages)
                   if n < min_pages:
-                      print('Too few pages:', path, n); ok=False
+                      print('Too few pages:', path, n)
+                      return False
+                  return True
               except Exception as e:
-                  print('Invalid PDF:', path, e); ok=False
+                  print('Invalid PDF:', path, e)
+                  return False
+          ok = True
           root = 'docs/outputs'
           for f in ['notebook_lined.pdf','bullet_journal.pdf','grid_notebook.pdf','daily_planner.pdf','monthly_planner.pdf']:
               p = os.path.join(root,f)
               if os.path.exists(p):
-                  check(p, 24)
+                  ok = check(p, 24) and ok
           if not ok:
               sys.exit(1)
           PY
