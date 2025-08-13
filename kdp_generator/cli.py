@@ -77,7 +77,7 @@ def parse_args() -> argparse.Namespace:
     p4.add_argument("--body-font", dest="body_font", type=str, default="")
     p4.add_argument("--out", default="samples/notebook.pdf")
 
-    # Grid notebook (proxy to unified renderer with lined replaced by grid content)
+    # Grid notebook (proxy to unified renderer with dotted content)
     n1 = sub.add_parser("grid", help="Grid notebook (5mm grid)")
     n1.add_argument("--title", default="Grid Notebook")
     n1.add_argument("--pages", type=int, default=120)
@@ -159,6 +159,38 @@ def parse_args() -> argparse.Namespace:
     p15 = sub.add_parser("weekly", help="Generate weekly planner")
     p15.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
     p15.add_argument("--out", default="samples/weekly.pdf")
+
+    # Restore extra notebooks & planners
+    n3 = sub.add_parser("daily", help="Daily planner")
+    n3.add_argument("--pages", type=int, default=90)
+    n3.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
+    n3.add_argument("--out", default="samples/daily_planner.pdf")
+
+    n4 = sub.add_parser("monthly_planner", help="Monthly undated planner")
+    n4.add_argument("--months", type=int, default=12)
+    n4.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
+    n4.add_argument("--out", default="samples/monthly_planner.pdf")
+
+    n5 = sub.add_parser("habit", help="Habit tracker")
+    n5.add_argument("--pages", type=int, default=12)
+    n5.add_argument("--habits", type=int, default=10)
+    n5.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
+    n5.add_argument("--out", default="samples/habit_tracker.pdf")
+
+    n6 = sub.add_parser("budget", help="Budget planner")
+    n6.add_argument("--pages", type=int, default=12)
+    n6.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
+    n6.add_argument("--out", default="samples/budget_planner.pdf")
+
+    n7 = sub.add_parser("recipe", help="Recipe book")
+    n7.add_argument("--pages", type=int, default=100)
+    n7.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
+    n7.add_argument("--out", default="samples/recipe_book.pdf")
+
+    n8 = sub.add_parser("herbarium", help="Herbarium (pressed leaves)")
+    n8.add_argument("--leaves", nargs="*", default=["Maple", "Oak", "Birch", "Chestnut", "Willow"]) 
+    n8.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
+    n8.add_argument("--out", default="samples/herbarium.pdf")
 
     # Themed
     t1 = sub.add_parser("wedding", help="Wedding planner (rich layout)")
@@ -295,6 +327,24 @@ def main():
     elif args.command == "weekly":
         render_weekly_planner_pdf(args.out, trim_size=args.trim)
         print(f"Saved weekly planner to {args.out}")
+    elif args.command == "daily":
+        render_daily_planner_pdf(args.pages, args.out, trim_size=args.trim)
+        print(f"Saved daily planner to {args.out}")
+    elif args.command == "monthly_planner":
+        render_monthly_planner_pdf(args.months, args.out, trim_size=args.trim)
+        print(f"Saved monthly planner to {args.out}")
+    elif args.command == "habit":
+        render_habit_tracker_pdf(args.pages, args.habits, args.out, trim_size=args.trim)
+        print(f"Saved habit tracker to {args.out}")
+    elif args.command == "budget":
+        render_budget_planner_pdf(args.pages, args.out, trim_size=args.trim)
+        print(f"Saved budget planner to {args.out}")
+    elif args.command == "recipe":
+        render_recipe_book_pdf(args.pages, args.out, trim_size=args.trim)
+        print(f"Saved recipe book to {args.out}")
+    elif args.command == "herbarium":
+        render_herbarium_pdf(args.leaves, args.out, trim_size=args.trim)
+        print(f"Saved herbarium to {args.out}")
     elif args.command == "wedding":
         render_wedding_planner_pdf(args.pages, args.out, trim_size=args.trim)
         print(f"Saved wedding planner to {args.out}")
