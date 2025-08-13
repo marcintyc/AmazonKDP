@@ -69,7 +69,6 @@ jobs:
           python -m kdp_generator.cli tracing --pages 6 --text ABCDEFGHIJKLMNOPQRSTUVWXYZ --trim 8.5x11 --out docs/outputs/tracing_abc.pdf
           python -m kdp_generator.cli calendar --trim 8.5x11 --out docs/outputs/calendar_current.pdf
           python -m kdp_generator.cli weekly --trim 8.5x11 --out docs/outputs/weekly_planner.pdf
-          python -m kdp_generator.cli daily --pages 90 --trim 8.5x11 --out docs/outputs/daily_planner.pdf
           python -m kdp_generator.cli monthly_planner --months 24 --trim 8.5x11 --out docs/outputs/monthly_planner.pdf
           python -m kdp_generator.cli habit --pages 12 --habits 12 --trim 8.5x11 --out docs/outputs/habit_tracker.pdf
           python -m kdp_generator.cli budget --pages 12 --trim 8.5x11 --out docs/outputs/budget_planner.pdf
