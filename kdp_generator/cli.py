@@ -67,13 +67,33 @@ def parse_args() -> argparse.Namespace:
     p3.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
     p3.add_argument("--out", default="samples/coloring.pdf")
 
-    # Notebook
+    # Notebook (uses unified renderer to support bleed/gutter/body-font)
     p4 = sub.add_parser("notebook", help="Generate notebook/journal")
     p4.add_argument("--title", required=True)
     p4.add_argument("--style", choices=["lined", "dotted", "blank"], default="lined")
     p4.add_argument("--pages", type=int, default=100)
     p4.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="6x9")
+    p4.add_argument("--bleed", action="store_true")
+    p4.add_argument("--body-font", dest="body_font", type=str, default="")
     p4.add_argument("--out", default="samples/notebook.pdf")
+
+    # Grid notebook (proxy to unified renderer with lined replaced by grid content)
+    n1 = sub.add_parser("grid", help="Grid notebook (5mm grid)")
+    n1.add_argument("--title", default="Grid Notebook")
+    n1.add_argument("--pages", type=int, default=120)
+    n1.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="6x9")
+    n1.add_argument("--bleed", action="store_true")
+    n1.add_argument("--body-font", dest="body_font", type=str, default="")
+    n1.add_argument("--out", default="samples/grid_notebook.pdf")
+
+    # Bullet journal (proxy to unified renderer with dotted content)
+    n2 = sub.add_parser("bujo", help="Bullet journal (5mm dots)")
+    n2.add_argument("--title", default="Bullet Journal")
+    n2.add_argument("--pages", type=int, default=120)
+    n2.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="6x9")
+    n2.add_argument("--bleed", action="store_true")
+    n2.add_argument("--body-font", dest="body_font", type=str, default="")
+    n2.add_argument("--out", default="samples/bujo.pdf")
 
     # Worksheets: multiplication table
     p5 = sub.add_parser("multiplication", help="Generate multiplication table worksheets")
@@ -140,52 +160,6 @@ def parse_args() -> argparse.Namespace:
     p15.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
     p15.add_argument("--out", default="samples/weekly.pdf")
 
-    # Extra notebooks & planners
-    n1 = sub.add_parser("grid", help="Grid notebook")
-    n1.add_argument("--title", default="Grid Notebook")
-    n1.add_argument("--pages", type=int, default=120)
-    n1.add_argument("--spacing", type=float, default=18.0)
-    n1.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="6x9")
-    n1.add_argument("--out", default="samples/grid_notebook.pdf")
-
-    n2 = sub.add_parser("bujo", help="Bullet journal")
-    n2.add_argument("--title", default="Bullet Journal")
-    n2.add_argument("--pages", type=int, default=120)
-    n2.add_argument("--spacing", type=float, default=18.0)
-    n2.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="6x9")
-    n2.add_argument("--out", default="samples/bujo.pdf")
-
-    n3 = sub.add_parser("daily", help="Daily planner")
-    n3.add_argument("--pages", type=int, default=90)
-    n3.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
-    n3.add_argument("--out", default="samples/daily_planner.pdf")
-
-    n4 = sub.add_parser("monthly_planner", help="Monthly undated planner")
-    n4.add_argument("--months", type=int, default=12)
-    n4.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
-    n4.add_argument("--out", default="samples/monthly_planner.pdf")
-
-    n5 = sub.add_parser("habit", help="Habit tracker")
-    n5.add_argument("--pages", type=int, default=12)
-    n5.add_argument("--habits", type=int, default=10)
-    n5.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
-    n5.add_argument("--out", default="samples/habit_tracker.pdf")
-
-    n6 = sub.add_parser("budget", help="Budget planner")
-    n6.add_argument("--pages", type=int, default=12)
-    n6.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
-    n6.add_argument("--out", default="samples/budget_planner.pdf")
-
-    n7 = sub.add_parser("recipe", help="Recipe book")
-    n7.add_argument("--pages", type=int, default=100)
-    n7.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
-    n7.add_argument("--out", default="samples/recipe_book.pdf")
-
-    n8 = sub.add_parser("herbarium", help="Herbarium (pressed leaves)")
-    n8.add_argument("--leaves", nargs="*", default=["Maple", "Oak", "Birch", "Chestnut", "Willow"])
-    n8.add_argument("--trim", choices=SUPPORTED_TRIM_SIZES, default="8.5x11")
-    n8.add_argument("--out", default="samples/herbarium.pdf")
-
     # Themed
     t1 = sub.add_parser("wedding", help="Wedding planner (rich layout)")
     t1.add_argument("--pages", type=int, default=20)
@@ -239,6 +213,40 @@ def main():
     args = parse_args()
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
 
+    if args.command == "notebook":
+        render_notebook_pdf(
+            args.title,
+            args.pages,
+            args.style,
+            args.out,
+            trim_size=args.trim,
+            with_bleed=args.bleed,
+            body_font_path=(args.body_font or None),
+        )
+        print(f"Saved notebook to {args.out}")
+    elif args.command == "grid":
+        render_notebook_pdf(
+            args.title,
+            args.pages,
+            "dotted",
+            args.out,
+            trim_size=args.trim,
+            with_bleed=args.bleed,
+            body_font_path=(args.body_font or None),
+        )
+        print(f"Saved grid notebook to {args.out}")
+    elif args.command == "bujo":
+        render_notebook_pdf(
+            args.title,
+            args.pages,
+            "dotted",
+            args.out,
+            trim_size=args.trim,
+            with_bleed=args.bleed,
+            body_font_path=(args.body_font or None),
+        )
+        print(f"Saved bullet journal to {args.out}")
+
     if args.command == "crossword":
         grid, words = generate_crossword(language=args.lang)
         render_crossword_pdf(grid, args.out, trim_size=args.trim, words=words)
@@ -250,9 +258,6 @@ def main():
     elif args.command == "coloring":
         render_coloring_pdf(args.kind, args.pages, args.out, trim_size=args.trim)
         print(f"Saved coloring pages to {args.out}")
-    elif args.command == "notebook":
-        render_notebook_pdf(args.title, args.pages, args.style, args.out, trim_size=args.trim)
-        print(f"Saved notebook to {args.out}")
     elif args.command == "multiplication":
         render_multiplication_table_pdf(args.out, upto=args.upto, trim_size=args.trim)
         print(f"Saved multiplication worksheets to {args.out}")
@@ -290,30 +295,6 @@ def main():
     elif args.command == "weekly":
         render_weekly_planner_pdf(args.out, trim_size=args.trim)
         print(f"Saved weekly planner to {args.out}")
-    elif args.command == "grid":
-        render_grid_notebook_pdf(args.title, args.pages, args.out, trim_size=args.trim, spacing=args.spacing)
-        print(f"Saved grid notebook to {args.out}")
-    elif args.command == "bujo":
-        render_bullet_journal_pdf(args.title, args.pages, args.out, trim_size=args.trim, spacing=args.spacing)
-        print(f"Saved bullet journal to {args.out}")
-    elif args.command == "daily":
-        render_daily_planner_pdf(args.pages, args.out, trim_size=args.trim)
-        print(f"Saved daily planner to {args.out}")
-    elif args.command == "monthly_planner":
-        render_monthly_planner_pdf(args.months, args.out, trim_size=args.trim)
-        print(f"Saved monthly planner to {args.out}")
-    elif args.command == "habit":
-        render_habit_tracker_pdf(args.pages, args.habits, args.out, trim_size=args.trim)
-        print(f"Saved habit tracker to {args.out}")
-    elif args.command == "budget":
-        render_budget_planner_pdf(args.pages, args.out, trim_size=args.trim)
-        print(f"Saved budget planner to {args.out}")
-    elif args.command == "recipe":
-        render_recipe_book_pdf(args.pages, args.out, trim_size=args.trim)
-        print(f"Saved recipe book to {args.out}")
-    elif args.command == "herbarium":
-        render_herbarium_pdf(args.leaves, args.out, trim_size=args.trim)
-        print(f"Saved herbarium to {args.out}")
     elif args.command == "wedding":
         render_wedding_planner_pdf(args.pages, args.out, trim_size=args.trim)
         print(f"Saved wedding planner to {args.out}")
