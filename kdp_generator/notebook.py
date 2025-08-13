@@ -2,7 +2,7 @@ from typing import Literal
 
 from reportlab.lib.colors import black, HexColor
 
-from .pdf_utils import create_canvas, size_to_points, draw_centered_title, draw_footer_page_number
+from .pdf_utils import create_canvas, size_to_points, draw_centered_title, draw_footer_page_number, draw_dot_grid
 
 PageStyle = Literal["lined", "dotted", "blank"]
 
@@ -16,16 +16,8 @@ def draw_lined_page(canvas, page_width: float, page_height: float, margin: float
         y += line_spacing
 
 
-def draw_dotted_page(canvas, page_width: float, page_height: float, margin: float, spacing: float = 24.0):
-    x = margin
-    y = margin
-    r = 0.8
-    while y < page_height - margin:
-        x = margin
-        while x < page_width - margin:
-            canvas.circle(x, y, r, stroke=1, fill=0)
-            x += spacing
-        y += spacing
+def draw_dotted_page(canvas, page_width: float, page_height: float, margin: float, spacing: float = 14.4):
+    draw_dot_grid(canvas, page_width, page_height, margin, spacing=spacing, radius=0.8, gray=0.75)
 
 
 def render_notebook_pdf(title: str, pages: int, style: PageStyle, filename: str, trim_size: str = "6x9"):
@@ -33,7 +25,6 @@ def render_notebook_pdf(title: str, pages: int, style: PageStyle, filename: str,
     page_width, page_height = size_to_points(trim_size)
     margin = 0.75 * 72
 
-    # Cover page
     canvas.setFillColor(HexColor("#f2f2f2"))
     canvas.rect(0, 0, page_width, page_height, fill=1, stroke=0)
     canvas.setFillColor(black)
@@ -44,7 +35,6 @@ def render_notebook_pdf(title: str, pages: int, style: PageStyle, filename: str,
     canvas.drawString((page_width - tw) / 2, page_height * 0.65, subtitle)
     canvas.showPage()
 
-    # Interior pages
     for i in range(1, pages + 1):
         if style == "dotted":
             draw_dotted_page(canvas, page_width, page_height, margin)

@@ -1,6 +1,6 @@
 from typing import List, Literal
 from reportlab.lib.colors import black, HexColor, Color
-from .pdf_utils import create_canvas, size_to_points, draw_centered_title, draw_footer_page_number
+from .pdf_utils import create_canvas, size_to_points, draw_centered_title, draw_footer_page_number, draw_dot_grid
 
 
 def _page_setup(trim_size: str):
@@ -13,14 +13,12 @@ def render_grid_notebook_pdf(title: str, pages: int, filename: str, trim_size: s
     canvas = create_canvas(filename, trim_size)
     page_width, page_height, margin = _page_setup(trim_size)
 
-    # Cover
     canvas.setFillColor(HexColor("#e2f0ff"))
     canvas.rect(0, 0, page_width, page_height, fill=1, stroke=0)
     canvas.setFillColor(black)
     draw_centered_title(canvas, page_width, page_height, title, y_ratio=0.7, font_size=40)
     canvas.showPage()
 
-    # Grid interior
     for i in range(1, pages + 1):
         canvas.setLineWidth(0.4)
         x = margin
@@ -38,19 +36,16 @@ def render_grid_notebook_pdf(title: str, pages: int, filename: str, trim_size: s
     canvas.save()
 
 
-def render_bullet_journal_pdf(title: str, pages: int, filename: str, trim_size: str = "6x9", spacing: float = 18.0):
-    # Simple BuJo: cover, index page, few future log pages, then dotted interior
+def render_bullet_journal_pdf(title: str, pages: int, filename: str, trim_size: str = "6x9", spacing: float = 14.4):
     canvas = create_canvas(filename, trim_size)
     page_width, page_height, margin = _page_setup(trim_size)
 
-    # Cover
     canvas.setFillColor(HexColor("#fff7ed"))
     canvas.rect(0, 0, page_width, page_height, fill=1, stroke=0)
     canvas.setFillColor(black)
     draw_centered_title(canvas, page_width, page_height, title, y_ratio=0.7, font_size=40)
     canvas.showPage()
 
-    # Index
     canvas.setFont("Helvetica-Bold", 20)
     canvas.drawString(margin, page_height - margin - 20, "Index")
     canvas.setFont("Helvetica", 12)
@@ -61,7 +56,6 @@ def render_bullet_journal_pdf(title: str, pages: int, filename: str, trim_size: 
     draw_footer_page_number(canvas, page_width, margin, 1)
     canvas.showPage()
 
-    # Future log (2 pages)
     for p in range(2):
         canvas.setFont("Helvetica-Bold", 16)
         cols = 3
@@ -77,17 +71,8 @@ def render_bullet_journal_pdf(title: str, pages: int, filename: str, trim_size: 
         draw_footer_page_number(canvas, page_width, margin, 2 + p)
         canvas.showPage()
 
-    # Dotted interior
     for i in range(1, pages + 1):
-        canvas.setLineWidth(0.2)
-        r = 0.8
-        y = margin
-        while y <= page_height - margin:
-            x = margin
-            while x <= page_width - margin:
-                canvas.circle(x, y, r, stroke=1, fill=0)
-                x += spacing
-            y += spacing
+        draw_dot_grid(canvas, page_width, page_height, margin, spacing=spacing, radius=0.8, gray=0.75)
         draw_footer_page_number(canvas, page_width, margin, 4 + i)
         canvas.showPage()
     canvas.save()
@@ -98,13 +83,11 @@ def render_daily_planner_pdf(pages: int, filename: str, trim_size: str = "8.5x11
     page_width, page_height, margin = _page_setup(trim_size)
 
     for i in range(1, pages + 1):
-        # Header
         canvas.setFont("Helvetica-Bold", 18)
         canvas.drawString(margin, page_height - margin - 10, "Daily Planner")
         canvas.setFont("Helvetica", 12)
         canvas.drawString(page_width - margin - 200, page_height - margin - 10, "Date: __________")
 
-        # Priorities
         canvas.setFont("Helvetica-Bold", 14)
         canvas.drawString(margin, page_height - margin - 40, "Top Priorities")
         y = page_height - margin - 60
@@ -112,7 +95,6 @@ def render_daily_planner_pdf(pages: int, filename: str, trim_size: str = "8.5x11
             canvas.rect(margin, y - 8, page_width - 2 * margin, 18, stroke=1, fill=0)
             y -= 24
 
-        # Schedule
         canvas.setFont("Helvetica-Bold", 14)
         canvas.drawString(margin, page_height - margin - 150, "Schedule")
         y = page_height - margin - 170
@@ -122,7 +104,6 @@ def render_daily_planner_pdf(pages: int, filename: str, trim_size: str = "8.5x11
             canvas.line(margin + 60, y + 2, page_width - margin, y + 2)
             y -= 22
 
-        # To-Do
         canvas.setFont("Helvetica-Bold", 14)
         x0 = page_width / 2 + 20
         yt = page_height - margin - 150
@@ -139,7 +120,6 @@ def render_daily_planner_pdf(pages: int, filename: str, trim_size: str = "8.5x11
 
 
 def render_monthly_planner_pdf(months: int, filename: str, trim_size: str = "8.5x11"):
-    # Undated monthly grid repeated `months` times
     canvas = create_canvas(filename, trim_size)
     page_width, page_height, margin = _page_setup(trim_size)
 
@@ -152,7 +132,6 @@ def render_monthly_planner_pdf(months: int, filename: str, trim_size: str = "8.5
     for i in range(1, months + 1):
         canvas.setFont("Helvetica-Bold", 18)
         canvas.drawString(margin, page_height - margin - 10, "Monthly Planner")
-        # grid
         for r in range(rows + 1):
             y = margin + r * cell_h
             canvas.line(margin, y, margin + grid_w, y)
@@ -168,24 +147,22 @@ def render_habit_tracker_pdf(pages: int, habits: int, filename: str, trim_size: 
     canvas = create_canvas(filename, trim_size)
     page_width, page_height, margin = _page_setup(trim_size)
 
-    cols = 31  # days
-    rows = habits + 1  # header row
+    cols = 31
+    rows = habits + 1
     grid_w = page_width - 2 * margin
     grid_h = page_height - 2 * margin - 40
-    cell_w = grid_w / (cols + 1)  # first col for habit name
+    cell_w = grid_w / (cols + 1)
     cell_h = grid_h / rows
 
     for i in range(1, pages + 1):
         canvas.setFont("Helvetica-Bold", 18)
         canvas.drawString(margin, page_height - margin - 10, "Habit Tracker")
 
-        # header days
         canvas.setFont("Helvetica", 10)
         for d in range(1, cols + 1):
             x = margin + (d + 0) * cell_w
             canvas.drawCentredString(x + cell_w / 2, page_height - margin - 30, str(d))
 
-        # grid
         for r in range(rows + 1):
             y = margin + r * cell_h
             canvas.line(margin, y, margin + grid_w, y)
@@ -193,7 +170,6 @@ def render_habit_tracker_pdf(pages: int, habits: int, filename: str, trim_size: 
             x = margin + c * cell_w
             canvas.line(x, margin, x, margin + grid_h)
 
-        # habit names lines
         y = margin + grid_h - cell_h + 6
         for _ in range(habits):
             canvas.line(margin + 6, y, margin + cell_w - 6, y)
@@ -211,14 +187,12 @@ def render_budget_planner_pdf(pages: int, filename: str, trim_size: str = "8.5x1
     for i in range(1, pages + 1):
         canvas.setFont("Helvetica-Bold", 18)
         canvas.drawString(margin, page_height - margin - 10, "Budget Planner")
-        # Income table
         canvas.setFont("Helvetica-Bold", 14)
         canvas.drawString(margin, page_height - margin - 40, "Income")
         y = page_height - margin - 60
         for _ in range(6):
             canvas.rect(margin, y - 10, page_width - 2 * margin, 20, stroke=1, fill=0)
             y -= 24
-        # Expenses table
         canvas.setFont("Helvetica-Bold", 14)
         canvas.drawString(margin, y - 20, "Expenses")
         y -= 40
@@ -241,7 +215,6 @@ def render_recipe_book_pdf(pages: int, filename: str, trim_size: str = "8.5x11")
         canvas.drawString(margin, page_height - margin - 40, "Title: ___________________________")
         canvas.drawString(margin, page_height - margin - 60, "Prep Time: ______  Cook Time: ______  Servings: ______")
 
-        # Ingredients
         canvas.setFont("Helvetica-Bold", 14)
         canvas.drawString(margin, page_height - margin - 90, "Ingredients")
         y = page_height - margin - 110
@@ -249,7 +222,6 @@ def render_recipe_book_pdf(pages: int, filename: str, trim_size: str = "8.5x11")
             canvas.rect(margin, y - 8, page_width / 2 - margin - 10, 18, stroke=1, fill=0)
             y -= 20
 
-        # Directions
         canvas.setFont("Helvetica-Bold", 14)
         canvas.drawString(page_width / 2 + 10, page_height - margin - 90, "Directions")
         y = page_height - margin - 110
@@ -263,23 +235,20 @@ def render_recipe_book_pdf(pages: int, filename: str, trim_size: str = "8.5x11")
 
 
 def render_herbarium_pdf(leaves: List[str], filename: str, trim_size: str = "8.5x11"):
-    # Title, TOC, then per-leaf pages with space and label
     canvas = create_canvas(filename, trim_size)
     page_width, page_height, margin = _page_setup(trim_size)
 
-    # Title page
     canvas.setFillColor(HexColor("#f0fdf4"))
     canvas.rect(0, 0, page_width, page_height, fill=1, stroke=0)
     canvas.setFillColor(black)
     draw_centered_title(canvas, page_width, page_height, "Herbarium", y_ratio=0.7, font_size=48)
     canvas.showPage()
 
-    # TOC
     canvas.setFont("Helvetica-Bold", 22)
     canvas.drawString(margin, page_height - margin - 10, "Table of Contents")
     canvas.setFont("Helvetica", 12)
     y = page_height - margin - 40
-    page_start = 3  # after title and toc
+    page_start = 3
     for idx, leaf in enumerate(leaves, start=0):
         canvas.drawString(margin, y, f"{idx+1:02d}. {leaf}  ..........  p. {page_start + idx}")
         y -= 16
@@ -289,13 +258,11 @@ def render_herbarium_pdf(leaves: List[str], filename: str, trim_size: str = "8.5
             y = page_height - margin - 40
     canvas.showPage()
 
-    # Leaf pages
     for i, leaf in enumerate(leaves, start=1):
         canvas.setFont("Helvetica-Bold", 24)
         canvas.drawString(margin, page_height - margin - 20, leaf)
         canvas.setFont("Helvetica", 12)
         canvas.drawString(margin, page_height - margin - 40, "Collected on: __________   Location: __________")
-        # pressing area
         x = margin
         y = margin + 40
         w = page_width - 2 * margin

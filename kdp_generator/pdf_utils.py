@@ -1,7 +1,7 @@
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.pdfgen.canvas import Canvas
-from reportlab.lib.colors import black, white, HexColor
+from reportlab.lib.colors import black, white, HexColor, Color
 from typing import Tuple
 
 KDP_SIZES_INCHES = {
@@ -46,3 +46,18 @@ def draw_footer_page_number(canvas: Canvas, page_width: float, margin: float, pa
     text = str(page_number)
     text_width = canvas.stringWidth(text, font_name, font_size)
     canvas.drawString(page_width - margin - text_width, margin * 0.6, text)
+
+
+def draw_dot_grid(canvas: Canvas, page_width: float, page_height: float, margin: float, spacing: float = 14.4, radius: float = 0.8, gray: float = 0.75):
+    """Draw a dot grid with consistent style (approx 5mm spacing by default).
+    spacing: in points; radius: in points; gray: 0..1 for color.
+    """
+    canvas.setStrokeColor(Color(gray, gray, gray))
+    x = margin
+    y = margin
+    while y <= page_height - margin:
+        x = margin
+        while x <= page_width - margin:
+            canvas.circle(x, y, radius, stroke=1, fill=0)
+            x += spacing
+        y += spacing
